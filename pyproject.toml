@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+dynamic = ["version"]
+name = "inkcord"
+dependencies = []
+requires-python = ">= 3.8"
+authors = [
+    {name = "sunset-hue", email = "pycharmdudeig@gmail.com"}
+]
+description = "A api wrapper made from the standard python namespace packages, nothing else"
+readme = "README.md"
+license = "MIT"
+keywords = ["discord","standard","api"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
+[project.urls]
+Homepage = "https://github.com/sunset-hue/inkcord"
