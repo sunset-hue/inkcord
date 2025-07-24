@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 dynamic = ["version"]
 name = "inkcord"
-dependencies = ["websocket"]
+dependencies = ["websockets"]
 requires-python = ">= 3.8"
 authors = [
     {name = "sunset-hue", email = "pycharmdudeig@gmail.com"}
