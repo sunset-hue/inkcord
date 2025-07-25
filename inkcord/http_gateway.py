@@ -19,6 +19,7 @@ import logging
 import websockets
 import platform
 from enums import BitIntents
+import threading
 
 
 logger = logging.getLogger("inkcord-establish")
@@ -28,6 +29,15 @@ class Request:
         self.method = method
         self.data = json.dumps(data)
         self.api_route = route
+
+class GatewayEvent:
+    def __init__(self,op: int,d: dict, s: int, t: str):
+        self.op = op
+        self.d = d
+        self.s = s
+        self.t = t
+        self.owner = None
+        # this owner field is to organize which thread is responding to which event
 
 
 class AsyncClient:
@@ -117,9 +127,20 @@ class AsyncClient:
     
     
     
+    async def handle_queue(self,queue: list[websockets.Data]):
+        # this handles sorting the messages into the normal queue, and the priority queue (for messages that need to be answered)
+        for data in queue:
+            ...
+    
+    
+    
+    
+    
+    
     async def establish_queue_handshake(self):
         logger.info("Handshake routine was successfully called. Initiating handshake...")
         gateway = await websockets.connect(self.gate_url)
+        event_queue = []
         async for message in gateway:
             serialized_data = json.loads(message)
             try:
@@ -146,9 +167,18 @@ class AsyncClient:
                     logger.info(f"Successfully connected to discord gateway with session id: {serialized_data["d"]["session_id"]}")
                     self.session_id = serialized_data["d"]["session_id"]
                 # from here on, the queue stuff is about to start
+                event_queue.append(message)
+                thread_event = GatewayEvent(
+                    serialized_data["op"],
+                    serialized_data["d"],
+                    serialized_data["s"],
+                    serialized_data["t"]
+                )
                 logger.info("Gateway handshake is finished. Setting up queue...")
+                thread = threading.Thread(None,None)
+                thread_event.owner = thread.name
+                thread.start()
                 
-                    
             except websockets.exceptions.WebSocketException as e:
                 logger.error(f"Encountered an exception when initiating handshake. Initiating reconnect... Error: {e.args}")
             
