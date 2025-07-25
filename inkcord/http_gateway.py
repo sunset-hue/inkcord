@@ -18,8 +18,10 @@ import json
 import logging
 import websockets
 import platform
-from enums import BitIntents
+from enums import BitIntents, RESUMABLE_CLOSE_CODES
 import threading
+from .thread_owning import handle_events
+from .listener import EventListener
 
 
 logger = logging.getLogger("inkcord-establish")
@@ -64,11 +66,12 @@ class AsyncClient:
     
     
     @classmethod
-    def setup(cls,token: str,intents: int,version: int = 10,gateway: bool = True):
+    def setup(cls,token: str,intents: int,version: int = 10,gateway: bool = True,event_listners: list[EventListener] | None = None):
         """ A class method that does the gateway setup.
         """
         class_setup = cls(token,intents,version,gateway)
         class_setup.get_gateway_url()
+        class_setup.event_listeners = event_listners
     
     
     def send_multiple_requests(self, *requests: Request):
@@ -125,18 +128,6 @@ class AsyncClient:
             if isinstance(e,websockets.exceptions.ConnectionClosedError):
                 logger.error("Connection was closed. Attempting reconnect....")
     
-    
-    
-    async def handle_queue(self,queue: list[websockets.Data]):
-        # this handles sorting the messages into the normal queue, and the priority queue (for messages that need to be answered)
-        for data in queue:
-            ...
-    
-    
-    
-    
-    
-    
     async def establish_queue_handshake(self):
         logger.info("Handshake routine was successfully called. Initiating handshake...")
         gateway = await websockets.connect(self.gate_url)
@@ -166,6 +157,7 @@ class AsyncClient:
                 if serialized_data["op"] == 0 and serialized_data['d'].get('v') == self.version:
                     logger.info(f"Successfully connected to discord gateway with session id: {serialized_data["d"]["session_id"]}")
                     self.session_id = serialized_data["d"]["session_id"]
+                    self.resume_url = serialized_data["d"]["resume_gateway_url"]
                 # from here on, the queue stuff is about to start
                 event_queue.append(message)
                 thread_event = GatewayEvent(
@@ -175,11 +167,38 @@ class AsyncClient:
                     serialized_data["t"]
                 )
                 logger.info("Gateway handshake is finished. Setting up queue...")
-                thread = threading.Thread(None,None)
+                thread = threading.Thread(None,handle_events,None,(self.event_listeners,logger,thread_event))
                 thread_event.owner = thread.name
                 thread.start()
                 
-            except websockets.exceptions.WebSocketException as e:
-                logger.error(f"Encountered an exception when initiating handshake. Initiating reconnect... Error: {e.args}")
+            except (websockets.exceptions.WebSocketException,websockets.ConnectionClosed) as e:
+                if isinstance(e,websockets.exceptions.WebSocketException):
+                    logger.error(f"Encountered an exception when initiating handshake. (starting reconnect...) Error: {e.args}")
+                if isinstance(e,websockets.ConnectionClosed):
+                    logger.warning(f"Gateway connection was closed with code {e.code}. Running reconnection routine to check whether code is resumable...")
+                    await self.reconnect(e.code)
+                
+            
+    async def reconnect(self,close_code: int):
+        self.num_reconnects += 1
+        gateway = await websockets.connect(self.resume_url)
+        async for data in gateway:
+            serialized = json.loads(data)
+            if close_code != RESUMABLE_CLOSE_CODES._member_map_.values():
+                logger.info("Not a resumable code. Reverting back to handshake...")
+            if serialized["op"] == 10:
+                message = {
+                    "op": 6,
+                    "d": {
+                        "token": self.token,
+                        "session_id": self.session_id,
+                        "seq": self.s
+                    }
+                }
+                await gateway.send(json.dumps(message))
+            if serialized["op"] == 0 and serialized["t"] == "RESUMED":
+                logger.info("Successfully RESUMED.")
+            if serialized["op"] == 9 and serialized["d"] == False:
+                logger.error("Invalid session. Reverting to handshake")
             
         
