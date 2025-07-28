@@ -72,6 +72,7 @@ class AsyncClient:
         class_setup = cls(token,intents,version,gateway)
         class_setup.get_gateway_url()
         class_setup.event_listeners = event_listners
+        return class_setup
     
     
     def send_multiple_requests(self, *requests: Request):
