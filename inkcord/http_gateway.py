@@ -181,11 +181,14 @@ class AsyncClient:
             
     async def reconnect(self,close_code: int):
         self.num_reconnects += 1
+        if self.num_reconnects == 3:
+            logger.fatal(f"Tried to reconnect 3 times, failed all of them. Please report this error to the devs by creating an issue with tag `bug-report` at this link: \n https://github.com/sunset-hue/inkcord/issues")    
         gateway = await websockets.connect(self.resume_url)
         async for data in gateway:
             serialized = json.loads(data)
             if close_code != RESUMABLE_CLOSE_CODES._member_map_.values():
                 logger.info("Not a resumable code. Reverting back to handshake...")
+                await self.establish_queue_handshake()
             if serialized["op"] == 10:
                 message = {
                     "op": 6,
@@ -200,5 +203,7 @@ class AsyncClient:
                 logger.info("Successfully RESUMED.")
             if serialized["op"] == 9 and serialized["d"] == False:
                 logger.error("Invalid session. Reverting to handshake")
+                await self.establish_queue_handshake()
+                # this may or may not cause recursion
             
         
