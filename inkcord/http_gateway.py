@@ -22,6 +22,7 @@ from enums import BitIntents, RESUMABLE_CLOSE_CODES
 import threading
 from .thread_owning import handle_events
 from .listener import EventListener
+from .exceptions import RequestException
 
 
 logger = logging.getLogger("inkcord-establish")
@@ -100,14 +101,16 @@ class AsyncClient:
         :param data: A dictionary containing the information that you're sending with the request.
         :type data: dict[str,Any]
         :returns: asyncio.Future
-        :raises: Exception Placeholder
+        :raises: RequestException
         NOTE: Don't use this function unless necessary, there are much simpler ways to send requests.
         """
         if method == "GET":
             self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",None,self.headers)
         else:
             self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
-        return self.loop.run_in_executor(None,self.http_connection.getresponse)
+            if self.loop.run_in_executor(None,self.http_connection.getresponse).result().getcode() >= 200:
+                raise RequestException("send_request(): Raised RequestException due to response code being above 200, indicating an error. Check authentication or to make sure that the request body is not malformed.")
+            return 
     
     def get_gateway_url(self):
         url = self.send_request('GET',"gateway",None)

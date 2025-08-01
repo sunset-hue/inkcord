@@ -7,18 +7,35 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 from typing import Callable
-
-class UserMap(dict):
-    def __init__(self,data: dict):
-        self.__data = data
-
+from ..resourceid import ResourceID
 
 
 class User:
-    def __new__(cls,_data: UserMap):
-        for data in _data:
-            for entry in _data.__dict__.keys():
-                if isinstance(_data.__dict__[entry],Callable):
-                    continue
-                else:
-                    cls.__dict__[entry] = _data.__dict__.keys()
+    def __init__(self,_data: dict[str,int | str | None]):
+        self.__data = _data
+        
+    
+    @property
+    def user_id(self) -> ResourceID:
+        "The user's id."
+        return ResourceID(self.__data["id"]) # pyright: ignore[reportReturnType]
+    
+    @property
+    def username(self) -> str:
+        "The user's name."
+        return self.__data["username"] # pyright: ignore[reportReturnType]
+    
+    @property
+    def discriminator(self) -> str:
+        "User discriminator. Usually 0 for non bot users."
+        return self.__data["discriminator"] # pyright: ignore[reportReturnType]
+    
+    @property
+    def global_name(self) -> str:
+        "The user's display name."
+        return self.__data["global_name"] # pyright: ignore[reportReturnType]
+    
+    @property
+    def avatar(self) -> str:
+        return "sss"
+    
