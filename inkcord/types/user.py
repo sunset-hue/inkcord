@@ -6,13 +6,18 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
-from typing import Callable
+from typing import Callable, Any
 from ..resourceid import ResourceID
+import sys
 
 
 class User:
-    def __init__(self,_data: dict[str,int | str | None]):
+    def __init__(self,_data: dict[str,Any]):
         self.__data = _data
+        self._locale = _data["locale"]
+        self._flags = _data["flags"]
+        self._public_flags = _data["public_flags"]
+        
         
     
     @property
@@ -37,5 +42,34 @@ class User:
     
     @property
     def avatar(self) -> str:
-        return "sss"
+        "contains link to the avatar picture of the user."
+        return f"https://cdn.discordapp.com/avatars/{self.user_id}/{self.__data["avatar"]}.{"gif" if self.__data["avatar"].startswith("a_") else "png"}"
+    
+    @property
+    def bot(self) -> bool | None:
+        "returns whether the user is a bot or not."
+        return self.__data.get("bot")
+    
+    @property
+    def system(self) -> bool | None:
+        "returns whether the user is a system user or not."
+        return self.__data.get("system")
+    
+    @property
+    def mfa(self) -> bool | None:
+        "Whether Multi Factor Authentication is enabled on this account."
+        return self.__data.get("mfa_enabled")
+    
+    @property
+    def banner(self) -> str:
+        return f"https://cdn.discordapp.com/banners/{self.user_id}/{self.__data.get("banner")}.{"gif" if self.__data["banner"].startswith("a_") else "png"}"
+    
+    @property
+    def accent_color(self) -> str:
+        "Returns accent color in hexadecimal format."
+        return hex(self.__data["accent_color"])
+    
+    
+    
+    
     
