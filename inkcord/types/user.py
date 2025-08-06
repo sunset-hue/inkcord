@@ -8,7 +8,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 from typing import Callable, Any
 from ..resourceid import ResourceID
-import sys
+from .avatar_deco import AvatarDecoration
+
 
 
 class User:
@@ -67,7 +68,15 @@ class User:
     @property
     def accent_color(self) -> str:
         "Returns accent color in hexadecimal format."
-        return hex(self.__data["accent_color"])
+        return hex(self.__data.get("accent_color"))
+    
+    
+    @property
+    def avatar_decoration(self) -> AvatarDecoration:
+        return AvatarDecoration(self.__data["avatar_decoration_data"]) if self.__data.get("avatar_decoration_data") else None
+
+    
+    
     
     
     
