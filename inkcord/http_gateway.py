@@ -26,20 +26,12 @@ from .exceptions import RequestException
 
 
 logger = logging.getLogger("inkcord-establish")
-formatter = logging.Formatter("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-handshake] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",datefmt="%a %H:%M")
+formatter = logging.Formatter("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",datefmt="%a %H:%M")
 class Request:
     def __init__(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],data: dict,route: str):
         self.method = method
         self.data = json.dumps(data)
         self.api_route = route
-
-class GatewayEvent:
-    def __init__(self,op: int,d: dict, s: int, t: str):
-        self.op = op
-        self.d = d
-        self.s = s
-        self.t = t
-        self.owner = None
         # this owner field is to organize which thread is responding to which event
 
 
@@ -190,7 +182,7 @@ class AsyncClient:
         gateway = await websockets.connect(self.resume_url)
         async for data in gateway:
             serialized = json.loads(data)
-            if close_code != RESUMABLE_CLOSE_CODES._member_map_.values():
+            if close_code not in RESUMABLE_CLOSE_CODES:
                 logger.info("Not a resumable code. Reverting back to handshake...")
                 await self.establish_queue_handshake()
             if serialized["op"] == 10:

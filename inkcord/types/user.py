@@ -37,12 +37,12 @@ class User:
         return self.__data["discriminator"] # pyright: ignore[reportReturnType]
     
     @property
-    def global_name(self) -> str:
+    def global_name(self) -> str | None:
         "The user's display name."
         return self.__data["global_name"] # pyright: ignore[reportReturnType]
     
     @property
-    def avatar(self) -> str:
+    def avatar(self) -> str | None:
         "contains link to the avatar picture of the user."
         return f"https://cdn.discordapp.com/avatars/{self.user_id}/{self.__data["avatar"]}.{"gif" if self.__data["avatar"].startswith("a_") else "png"}"
     
@@ -62,18 +62,25 @@ class User:
         return self.__data.get("mfa_enabled")
     
     @property
-    def banner(self) -> str:
-        return f"https://cdn.discordapp.com/banners/{self.user_id}/{self.__data.get("banner")}.{"gif" if self.__data["banner"].startswith("a_") else "png"}"
+    def banner(self) -> str | None:
+        return f"https://cdn.discordapp.com/banners/{self.user_id}/{self.__data.get("banner")}.{"gif" if self.__data["banner"].startswith("a_") else "png"}" if self.__data.get("banner") else None
     
     @property
-    def accent_color(self) -> str:
+    def accent_color(self) -> str | None:
         "Returns accent color in hexadecimal format."
-        return hex(self.__data.get("accent_color"))
+        return hex(self.__data["accent_color"]) if self.__data.get("accent_color") else None
     
     
     @property
-    def avatar_decoration(self) -> AvatarDecoration:
+    def avatar_decoration(self) -> AvatarDecoration | None:
+        "Returns an AvatarDecoration object which contains avatar decoration data, such as the link to it, and the sku id of it."
         return AvatarDecoration(self.__data["avatar_decoration_data"]) if self.__data.get("avatar_decoration_data") else None
+    
+    @property
+    def collectibles(self) -> List[Nameplate] | Nameplate:
+        
+
+    
 
     
     

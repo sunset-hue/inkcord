@@ -37,7 +37,7 @@ class BitIntents(enum.IntFlag):
     GUILD_MESSAGE_POLLS = 24
     DIRECT_MESSAGE_POLLS = 25
 
-class RESUMABLE_CLOSE_CODES(enum.Enum):
+class RESUMABLE_CLOSE_CODES(enum.IntEnum):
     UNKNOWN = 4000
     UNKNOWN_OP = 4001
     DECODE_ERR = 4002
