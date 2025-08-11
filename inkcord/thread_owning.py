@@ -11,6 +11,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 """
 
 import typing
+import websockets
+import json
+import asyncio
 
 if typing.TYPE_CHECKING:
     import logging
@@ -24,14 +27,25 @@ class GatewayEvent:
         self.t = t
         self.owner = None
 
+class ThreadJob:
+    def __init__(self):
+        self.finished = False
+        self.process_time = 0
+        self.result = None
+        
+        
 
-async def handle_events(handlers: list[EventListener],logger: logging.Logger,event: GatewayEvent):
-    for handler in handlers:
-        if handler.event == event.op:
-            logger.info("Found handler! Running handler...")
-            await handler.func(event)
-    if event.t == "INTERACTION_CREATE":
-        # note: need to place logic here
-        ...    
+async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventListener],logger: logging.Logger,events: websockets.ClientConnection):
+    # I'm going to restructure this into an async generator so we have actual queues for threads instead of just allocating a thread to one thing
+    job = ThreadJob()
+    async for event in events:
+        srlzed = json.loads(event) 
+        handler = [i for i in handlers if i.event == srlzed["op"]]
+        if len(handler) > 0:
+            logger.info(f"Found event listener for event name {srlzed["t"]}. Running routine now...")
+            result = loop.run_in_executor(None,handler[0].func)
+            if result.result() is not None:
+                logger.warning("Do not add return objects to listeners. This may break the event handling system.")
             # this is placeholder for now
+        
     

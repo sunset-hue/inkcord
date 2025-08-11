@@ -20,7 +20,7 @@ import websockets
 import platform
 from enums import BitIntents, RESUMABLE_CLOSE_CODES
 import threading
-from .thread_owning import handle_events
+from .thread_owning import handle_events,GatewayEvent
 from .listener import EventListener
 from .exceptions import RequestException
 
@@ -99,10 +99,12 @@ class AsyncClient:
         if method == "GET":
             self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",None,self.headers)
         else:
-            self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
-            if self.loop.run_in_executor(None,self.http_connection.getresponse).result().getcode() >= 200:
+            request_to_check = self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
+            result_to_check = self.loop.run_in_executor(None,self.http_connection.getresponse)
+            if result_to_check.result().getcode() >= 200:
                 raise RequestException("send_request(): Raised RequestException due to response code being above 200, indicating an error. Check authentication or to make sure that the request body is not malformed.")
-            return 
+            else:
+                return result_to_check 
     
     def get_gateway_url(self):
         url = self.send_request('GET',"gateway",None)
@@ -123,6 +125,14 @@ class AsyncClient:
         except (websockets.exceptions.ConnectionClosedError,websockets.exceptions.ConnectionClosedOK) as e:
             if isinstance(e,websockets.exceptions.ConnectionClosedError):
                 logger.error("Connection was closed. Attempting reconnect....")
+    
+    async def thread_handler(self,thread_event: GatewayEvent):
+            thread = threading.Thread(None,handle_events,None,(self.event_listeners,logger,thread_event))
+            thread_event.owner = thread.name
+            thread.start()
+            # this is placeholder code for now, it's gonna manage all the thread queue stuff soon
+    
+    
     
     async def establish_queue_handshake(self):
         logger.info("Handshake routine was successfully called. Initiating handshake...")
@@ -163,9 +173,6 @@ class AsyncClient:
                     serialized_data["t"]
                 )
                 logger.info("Gateway handshake is finished. Setting up queue...")
-                thread = threading.Thread(None,handle_events,None,(self.event_listeners,logger,thread_event))
-                thread_event.owner = thread.name
-                thread.start()
                 
             except (websockets.exceptions.WebSocketException,websockets.ConnectionClosed) as e:
                 if isinstance(e,websockets.exceptions.WebSocketException):
