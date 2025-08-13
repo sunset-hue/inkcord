@@ -78,6 +78,7 @@ class User:
     
     @property
     def collectibles(self) -> List[Nameplate] | Nameplate | None:
+        "A list/object containing the current nameplates the user has."
         if self.__data.get("collectibles"):
             nameplate = [Nameplate(data) for data in self.__data["collectibles"]]
             return nameplate[0] if len(nameplate) == 1 else nameplate
@@ -85,7 +86,9 @@ class User:
     
     @property
     def guild_tag(self) -> PrimaryGuild | None:
-        return self.__data.get("primary_guild")
+        "Metadata for the guild tag."
+        return PrimaryGuild(self.__data["primary_guild"]) if self.__data.get("primary_guild") else None
+    
     
 
     
