@@ -46,6 +46,8 @@ async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventList
             result = loop.run_in_executor(None,handler[0].func)
             if result.result() is not None:
                 logger.warning("Do not add return objects to listeners. This may break the event handling system.")
-            # this is placeholder for now
+        else:
+            yield job
+            # this is placeholder while I find a way to implement event handling that's standalone from user overridable ones
         
     

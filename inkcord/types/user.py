@@ -8,7 +8,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 from typing import Callable, Any, List
 from ..resourceid import ResourceID
-from .avatar import AvatarDecoration, Nameplate
+from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
 
 
 
@@ -77,8 +77,16 @@ class User:
         return AvatarDecoration(self.__data["avatar_decoration_data"]) if self.__data.get("avatar_decoration_data") else None
     
     @property
-    def collectibles(self) -> List[Nameplate] | Nameplate:
-        return Nameplate()
+    def collectibles(self) -> List[Nameplate] | Nameplate | None:
+        if self.__data.get("collectibles"):
+            nameplate = [Nameplate(data) for data in self.__data["collectibles"]]
+            return nameplate[0] if len(nameplate) == 1 else nameplate
+        return None
+    
+    @property
+    def guild_tag(self) -> PrimaryGuild | None:
+        return self.__data.get("primary_guild")
+    
 
     
 
