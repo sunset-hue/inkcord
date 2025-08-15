@@ -21,9 +21,19 @@ class Guild:
     @property
     def icon(self):
         "CDN link leading to the icon of the guild."
-        return f"https://cdn.discordapp.com/icons/{self.id}/{self.__data["icon"]}" if self.__data["icon"] is not None else None
+        return f"https://cdn.discordapp.com/icons/{self.id}/{self.__data["icon"]}.png" if self.__data["icon"] is not None else None
     
     @property
     def splash(self):
         "CDN link leading to the guild's splash banner."
-        return 
+        return f"https://cdn.discordapp.com/splashes/{self.id}/{self.__data["splash"]}.png" if self.__data["splash"] is not None else None
+    
+    @property
+    def owner(self) -> bool | None:
+        return self.__data.get("owner")
+    
+    
+    @property
+    def owner_id(self) -> ResourceID:
+        return ResourceID(self.__data["owner_id"])
+    
