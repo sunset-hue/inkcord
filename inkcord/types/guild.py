@@ -37,3 +37,6 @@ class Guild:
     def owner_id(self) -> ResourceID:
         return ResourceID(self.__data["owner_id"])
     
+    @property
+    def permissions(self) -> Permissions:
+        ...
