@@ -30,13 +30,23 @@ class Guild:
     
     @property
     def owner(self) -> bool | None:
+        "Whether the bot is the owner of the guild."
         return self.__data.get("owner")
     
     
     @property
     def owner_id(self) -> ResourceID:
+        "The ID of the owner of the guild."
         return ResourceID(self.__data["owner_id"])
     
     @property
     def permissions(self) -> Permissions:
-        ...
+        """Permissions for the specific user in the guild."""
+        return Permissions()
+        # this is a placeholder for now
+    
+    @property
+    def afk_channel_id(self) -> int:
+        """AFK channel id."""
+        return self.__data.get("afk_channel_id")
+    

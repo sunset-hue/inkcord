@@ -48,6 +48,15 @@ async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventList
                 logger.warning("Do not add return objects to listeners. This may break the event handling system.")
         else:
             yield job
-            # this is placeholder while I find a way to implement event handling that's standalone from user overridable ones
+            # _event_handlers = {
+            #   "interaction_create":interaction_create,
+            #   blah blah blah implement ones that are needed
+            # }
+            # _event_handlers[srlzed["t"]](job)
+            # and some extra stuff here (idk)
+
+
+async def interaction_create():
+    
         
     

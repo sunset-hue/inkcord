@@ -126,9 +126,8 @@ class AsyncClient:
             if isinstance(e,websockets.exceptions.ConnectionClosedError):
                 logger.error("Connection was closed. Attempting reconnect....")
     
-    async def thread_handler(self,thread_event: GatewayEvent):
-            thread = threading.Thread(None,handle_events,None,(self.event_listeners,logger,thread_event))
-            thread_event.owner = thread.name
+    async def thread_handler(self,loop: asyncio.AbstractEventLoop):
+            thread = threading.Thread(None,handle_events,None,(loop,self.event_listeners,logger,self.gateway_conn))
             thread.start()
             # this is placeholder code for now, it's gonna manage all the thread queue stuff soon
     
@@ -137,6 +136,7 @@ class AsyncClient:
     async def establish_queue_handshake(self):
         logger.info("Handshake routine was successfully called. Initiating handshake...")
         gateway = await websockets.connect(self.gate_url)
+        self.gateway_conn = gateway
         event_queue = []
         async for message in gateway:
             serialized_data = json.loads(message)
