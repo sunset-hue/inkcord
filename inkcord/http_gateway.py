@@ -10,11 +10,12 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 
 
-import http
 import http.client as httcl
+import psutil
 import asyncio
 import typing
 import json
+import os
 import logging
 import websockets
 import platform
@@ -22,11 +23,18 @@ from enums import BitIntents, RESUMABLE_CLOSE_CODES
 import threading
 from .thread_owning import handle_events,GatewayEvent
 from .listener import EventListener
-from .exceptions import RequestException
+from .exceptions import RequestException, GeneralException
 
 
 logger = logging.getLogger("inkcord-establish")
-formatter = logging.Formatter("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",datefmt="%a %H:%M")
+
+class FormatterThreading(logging.Formatter):
+    def format(self, record):
+        if record.levelno == logging.DEBUG:
+            self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-DEBUG-Thread: %(threadName)s] (You are in a testing environment/version of inkcord.) | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
+            # this is just so I have extra info to debug with
+        else:
+            self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
 class Request:
     def __init__(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],data: dict,route: str):
         self.method = method
@@ -55,6 +63,10 @@ class AsyncClient:
         self.token = token
         self.intents = intents
         self.version = version
+        self.thread_count = psutil.cpu_count()
+        if self.thread_count == 1:
+            raise GeneralException("bro how the HELL do you only have 1 thread is ur computer from the 1990s or something idek how this would happen")
+        # max amount of threads is limited to amt of cores because i saw it on a stack overflow thing
         # this loop is going to be used by (almost) all other routines so the lib is effectively async
     
     
@@ -125,11 +137,14 @@ class AsyncClient:
         except (websockets.exceptions.ConnectionClosedError,websockets.exceptions.ConnectionClosedOK) as e:
             if isinstance(e,websockets.exceptions.ConnectionClosedError):
                 logger.error("Connection was closed. Attempting reconnect....")
-    
-    async def thread_handler(self,loop: asyncio.AbstractEventLoop):
-            thread = threading.Thread(None,handle_events,None,(loop,self.event_listeners,logger,self.gateway_conn))
-            thread.start()
             # this is placeholder code for now, it's gonna manage all the thread queue stuff soon
+    
+    async def queue_logic(self,events: websockets.ClientConnection):
+        # manages the amount of threads and what each thread is doing
+        async for message in events:
+            if "debug" in os.listdir(".."):
+                logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
+    
     
     
     

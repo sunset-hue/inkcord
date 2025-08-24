@@ -32,6 +32,7 @@ class ThreadJob:
         self.finished = False
         self.process_time = 0
         self.result = None
+        self.event = None
         
         
 
@@ -40,6 +41,7 @@ async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventList
     job = ThreadJob()
     async for event in events:
         srlzed = json.loads(event) 
+        job.event = srlzed
         handler = [i for i in handlers if i.event == srlzed["op"]]
         if len(handler) > 0:
             logger.info(f"Found event listener for event name {srlzed["t"]}. Running routine now...")
@@ -56,7 +58,7 @@ async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventList
             # and some extra stuff here (idk)
 
 
-async def interaction_create():
+async def interaction_create(job: ThreadJob):
     
         
     
