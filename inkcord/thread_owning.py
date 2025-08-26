@@ -14,6 +14,7 @@ import typing
 import websockets
 import json
 import asyncio
+import datetime
 
 if typing.TYPE_CHECKING:
     import logging
@@ -33,15 +34,15 @@ class ThreadJob:
         self.process_time = 0
         self.result = None
         self.event = None
+        self.name = ...
         
         
 
-async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventListener],logger: logging.Logger,events: websockets.ClientConnection):
-    # I'm going to restructure this into an async generator so we have actual queues for threads instead of just allocating a thread to one thing
-    job = ThreadJob()
+async def handle_events(job: ThreadJob | None,loop: asyncio.AbstractEventLoop,handlers: list[EventListener],logger: logging.Logger,events: websockets.ClientConnection):
+    time1 = datetime.datetime.now()
+    # i don't wannt errors here
     async for event in events:
-        srlzed = json.loads(event) 
-        job.event = srlzed
+        srlzed = json.loads(event)  
         handler = [i for i in handlers if i.event == srlzed["op"]]
         if len(handler) > 0:
             logger.info(f"Found event listener for event name {srlzed["t"]}. Running routine now...")
@@ -49,16 +50,17 @@ async def handle_events(loop: asyncio.AbstractEventLoop,handlers: list[EventList
             if result.result() is not None:
                 logger.warning("Do not add return objects to listeners. This may break the event handling system.")
         else:
-            yield job
             # _event_handlers = {
             #   "interaction_create":interaction_create,
             #   blah blah blah implement ones that are needed
             # }
             # _event_handlers[srlzed["t"]](job)
-            # and some extra stuff here (idk)
-
+        # for those who noticed, it's not an async generator anymore since it's not exactly a queue system more like a drop free system
+            ...
+    time2 = datetime.datetime.now() # time2 here is just taking advantage of python by timing itself
+    job.process_time = time2 - time1 # this might work idk
 
 async def interaction_create(job: ThreadJob):
-    
+    ...
         
     

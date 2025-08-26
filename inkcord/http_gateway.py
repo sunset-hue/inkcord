@@ -21,7 +21,7 @@ import websockets
 import platform
 from enums import BitIntents, RESUMABLE_CLOSE_CODES
 import threading
-from .thread_owning import handle_events,GatewayEvent
+from .thread_owning import handle_events,GatewayEvent,ThreadJob
 from .listener import EventListener
 from .exceptions import RequestException, GeneralException
 
@@ -31,7 +31,7 @@ logger = logging.getLogger("inkcord-establish")
 class FormatterThreading(logging.Formatter):
     def format(self, record):
         if record.levelno == logging.DEBUG:
-            self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-DEBUG-Thread: %(threadName)s] (You are in a testing environment/version of inkcord.) | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
+            self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-DEBUG Thread: %(threadName)s] (You are in a testing environment/version of inkcord.) | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
             # this is just so I have extra info to debug with
         else:
             self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
@@ -141,10 +141,23 @@ class AsyncClient:
     
     async def queue_logic(self,events: websockets.ClientConnection):
         # manages the amount of threads and what each thread is doing
+        self.threadjobs: list[ThreadJob] = []
+        job = ThreadJob()
+        curr_threads = 0
         async for message in events:
+            if len(self.threadjobs) == self.thread_count and [threadjob for threadjob in self.threadjobs if threadjob.finished == False] == len(self.threadjobs):
+                logger.warning("All threads are occupied by an event. Priority events will have new threads created for them, while others will have a DELAYED RESPONSE.")
+                
+            srlized = json.loads(message)
             if "debug" in os.listdir(".."):
                 logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
-    
+            curr_threads += 1
+            curr_thread = threading.Thread(target=handle_events,args=(job,self.loop,self.event_listeners,logger,self.gateway_conn))
+            
+            job.event = srlized["t"]
+            job.name = curr_thread.name # pyright: ignore[reportAttributeAccessIssue]
+            self.threadjobs.append(job)
+
     
     
     
