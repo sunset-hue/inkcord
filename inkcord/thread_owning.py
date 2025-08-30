@@ -50,14 +50,12 @@ async def handle_events(job: ThreadJob | None,loop: asyncio.AbstractEventLoop,ha
             if result.result() is not None:
                 logger.warning("Do not add return objects to listeners. This may break the event handling system.")
         else:
-            # _event_handlers = {
-            #   "interaction_create":interaction_create,
-            #   blah blah blah implement ones that are needed
-            # }
-            # _event_handlers[srlzed["t"]](job)
-        # for those who noticed, it's not an async generator anymore since it's not exactly a queue system more like a drop free system
+            _event_handlers = {
+            "interaction_create":interaction_create,
+            }
+            await _event_handlers[srlzed["t"].upper()](job)
             ...
-    time2 = datetime.datetime.now() # time2 here is just taking advantage of python by timing itself
+    time2 = datetime.datetime.now() # interpeter magic
     job.process_time = time2 - time1 # this might work idk
 
 async def interaction_create(job: ThreadJob):

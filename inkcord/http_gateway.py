@@ -147,16 +147,20 @@ class AsyncClient:
         async for message in events:
             if len(self.threadjobs) == self.thread_count and [threadjob for threadjob in self.threadjobs if threadjob.finished == False] == len(self.threadjobs):
                 logger.warning("All threads are occupied by an event. Priority events will have new threads created for them, while others will have a DELAYED RESPONSE.")
-                
             srlized = json.loads(message)
             if "debug" in os.listdir(".."):
                 logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
             curr_threads += 1
             curr_thread = threading.Thread(target=handle_events,args=(job,self.loop,self.event_listeners,logger,self.gateway_conn))
-            
             job.event = srlized["t"]
             job.name = curr_thread.name # pyright: ignore[reportAttributeAccessIssue]
             self.threadjobs.append(job)
+            n = 0
+            for job in self.threadjobs:
+                if job.finished:
+                    self.threadjobs.pop(n)
+                n += 1
+        # finally finished im guessing I have no idea
 
     
     
