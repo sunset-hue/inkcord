@@ -19,14 +19,12 @@ import os
 import logging
 import websockets
 import platform
-from enums import BitIntents, RESUMABLE_CLOSE_CODES
+from inkcord.shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
 import threading
-from .thread_owning import handle_events,GatewayEvent,ThreadJob
+from .thread_owning import GatewayEvent
+from .event_handling import handle_events
 from .listener import EventListener
 from .exceptions import RequestException, GeneralException
-
-
-logger = logging.getLogger("inkcord-establish")
 
 class FormatterThreading(logging.Formatter):
     def format(self, record):
@@ -64,6 +62,7 @@ class AsyncClient:
         self.intents = intents
         self.version = version
         self.thread_count = psutil.cpu_count()
+        self.slash_cmds = []
         if self.thread_count == 1:
             raise GeneralException("bro how the HELL do you only have 1 thread is ur computer from the 1990s or something idek how this would happen")
         # max amount of threads is limited to amt of cores because i saw it on a stack overflow thing
@@ -151,7 +150,7 @@ class AsyncClient:
             if "debug" in os.listdir(".."):
                 logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
             curr_threads += 1
-            curr_thread = threading.Thread(target=handle_events,args=(job,self.loop,self.event_listeners,logger,self.gateway_conn))
+            curr_thread = threading.Thread(target=handle_events,args=(self,job,self.loop,self.event_listeners,logger,self.gateway_conn))
             job.event = srlized["t"]
             job.name = curr_thread.name # pyright: ignore[reportAttributeAccessIssue]
             self.threadjobs.append(job)
