@@ -2,7 +2,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from .shared_types import BitIntents
-    from .event_handling import 
+    from .event_handling import EventListener
 
 
 
