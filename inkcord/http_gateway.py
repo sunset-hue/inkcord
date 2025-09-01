@@ -19,7 +19,7 @@ import os
 import logging
 import websockets
 import platform
-from inkcord.shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
+from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
 import threading
 from .thread_owning import GatewayEvent
 from .event_handling import handle_events
@@ -38,7 +38,6 @@ class Request:
         self.method = method
         self.data = json.dumps(data)
         self.api_route = route
-        # this owner field is to organize which thread is responding to which event
 
 
 class AsyncClient:
@@ -63,6 +62,7 @@ class AsyncClient:
         self.version = version
         self.thread_count = psutil.cpu_count()
         self.slash_cmds = []
+        self._debug = True if "debug" in os.listdir("..") else False
         if self.thread_count == 1:
             raise GeneralException("bro how the HELL do you only have 1 thread is ur computer from the 1990s or something idek how this would happen")
         # max amount of threads is limited to amt of cores because i saw it on a stack overflow thing
@@ -75,7 +75,7 @@ class AsyncClient:
         """
         class_setup = cls(token,intents,version,gateway)
         class_setup.get_gateway_url()
-        class_setup.event_listeners = event_listners
+        class_setup.event_listeners = event_listners #pyright: ignore
         return class_setup
     
     
@@ -119,24 +119,19 @@ class AsyncClient:
     
     def get_gateway_url(self):
         url = self.send_request('GET',"gateway",None)
-        url_response = url.result()
+        url_response = url.result()  # pyright: ignore[reportOptionalMemberAccess]
         url_unwrap: dict[str,str] = json.loads(url_response.msg.as_string())
         self.gate_url: str | None = url_unwrap["url"]
     
     async def send_heartbeat(self,serialized_data: dict,gateway: websockets.ClientConnection):
-        try:
             if serialized_data["op"] == 11:
                 await asyncio.sleep(self.interval / 1000)
                 await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
-                logger.info("Heartbeat sent.")
+                logger.debug("Heartbeat sent.")
             # this is temporary, to make sure it's sending the heartbeats correctly
             elif serialized_data["op"] == 1:
                 await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
-                logger.info("Heartbeat sent immediately.")
-        except (websockets.exceptions.ConnectionClosedError,websockets.exceptions.ConnectionClosedOK) as e:
-            if isinstance(e,websockets.exceptions.ConnectionClosedError):
-                logger.error("Connection was closed. Attempting reconnect....")
-            # this is placeholder code for now, it's gonna manage all the thread queue stuff soon
+                logger.debug("Heartbeat sent immediately.")
     
     async def queue_logic(self,events: websockets.ClientConnection):
         # manages the amount of threads and what each thread is doing
@@ -147,7 +142,7 @@ class AsyncClient:
             if len(self.threadjobs) == self.thread_count and [threadjob for threadjob in self.threadjobs if threadjob.finished == False] == len(self.threadjobs):
                 logger.warning("All threads are occupied by an event. Priority events will have new threads created for them, while others will have a DELAYED RESPONSE.")
             srlized = json.loads(message)
-            if "debug" in os.listdir(".."):
+            if self._debug:    
                 logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
             curr_threads += 1
             curr_thread = threading.Thread(target=handle_events,args=(self,job,self.loop,self.event_listeners,logger,self.gateway_conn))
@@ -164,13 +159,15 @@ class AsyncClient:
     
     
     
-    async def establish_queue_handshake(self):
+    async def establish_handshake(self):
         logger.info("Handshake routine was successfully called. Initiating handshake...")
         gateway = await websockets.connect(self.gate_url)
         self.gateway_conn = gateway
         event_queue = []
         async for message in gateway:
             serialized_data = json.loads(message)
+            if self._debug:
+                logger.debug(message)
             try:
                 if serialized_data["op"] == 10:
                     self.interval = serialized_data["d"]["heartbeat_interval"]
