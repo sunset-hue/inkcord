@@ -19,12 +19,14 @@ import os
 import logging
 import websockets
 import platform
-from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
 import threading
-from .thread_owning import GatewayEvent
-from .event_handling import handle_events
-from .listener import EventListener
-from .exceptions import RequestException, GeneralException
+    
+if typing.TYPE_CHECKING:    
+    from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
+    from .thread_owning import GatewayEvent
+    from .event_handling import handle_events
+    from .listener import EventListener
+    from .exceptions import RequestException, GeneralException
 
 class FormatterThreading(logging.Formatter):
     def format(self, record):
