@@ -12,10 +12,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 import typing
 
-if typing.TYPE_CHECKING:
-    import logging
-    from .listener import EventListener
-
 class GatewayEvent:
     def __init__(self,op: int,d: dict, s: int, t: str):
         self.op = op
