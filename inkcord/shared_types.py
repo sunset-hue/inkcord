@@ -50,3 +50,12 @@ class RESUMABLE_CLOSE_CODES(enum.IntEnum):
     INVALID_INTENTS = 4013
 
 logger = logging.getLogger("inkcord-establish")
+
+class ThreadJob:
+    def __init__(self):
+        self.finished = False
+        self.process_time = 0
+        self.result = None
+        self.event = None
+        self.name = ...
+        
