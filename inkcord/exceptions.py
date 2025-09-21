@@ -9,3 +9,8 @@ class RequestException(Exception):
 class GeneralException(Exception):
     def __init__(self,*args):
         logger.fatal(args)
+
+class HandleableException(Exception):
+    def __init__(self,*args):
+        pass
+    # this is eventually gonna be an exception that has extra info with it like missing permissions and such
