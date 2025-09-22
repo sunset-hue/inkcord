@@ -223,7 +223,7 @@ class AsyncClient:
             serialized = json.loads(data)
             if close_code not in RESUMABLE_CLOSE_CODES:
                 logger.info("Not a resumable code. Reverting back to handshake...")
-                await self.establish_queue_handshake()
+                await self.establish_handshake()
             if serialized["op"] == 10:
                 message = {
                     "op": 6,
@@ -238,7 +238,6 @@ class AsyncClient:
                 logger.info("Successfully RESUMED.")
             if serialized["op"] == 9 and serialized["d"] == False:
                 logger.error("Invalid session. Reverting to handshake")
-                await self.establish_queue_handshake()
-                # this may or may not cause recursion
+                await self.establish_handshake()
             
         

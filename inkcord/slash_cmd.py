@@ -15,6 +15,7 @@ class InteractionCommand:
     """An interaction command. Only for use for message slash commands, there are seperate classes for other types."""
     def __init__(self, command: Callable | Coroutine):
         self.handlers = []
+        
     
     
     def on_error(self,func: Callable):
