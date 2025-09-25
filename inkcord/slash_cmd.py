@@ -8,6 +8,7 @@ import re
 if typing.TYPE_CHECKING:
     from .http_gateway import FormatterThreading
     from .exceptions import HandleableException, GeneralException
+    from .shared_types import TYPEMAPS
 
 logger = logging.getLogger("inkcord-slash")
 handler = logging.StreamHandler()
@@ -49,4 +50,22 @@ class InteractionCommand:
     
     def _jsonify_params(self):
         l = []
-        sig = inspect.signature(self.func).parameters
+        sig = inspect.signature(self.func)
+        typedict = {
+            str : "STR",
+            int : "INT",
+            float : "FLOAT",
+            bool : "BOOL"
+            
+        }
+        # this is for basic types, the other TYPEMAPS one is for extra discord defined types
+        for i in sig.parameters.keys():
+            l.append({
+                "name": i,
+                "description": None, # this is placeholder for rn, too lazy to add parameter specific descriptions
+                "type": TYPEMAPS._member_map_[typedict[sig.parameters[i].annotation]],
+                # so ugly :pensive:
+                "required": sig.parameters[i] is typing.Optional
+                # choices is gonna be it's own thing later
+                })
+        return l

@@ -58,4 +58,14 @@ class ThreadJob:
         self.result = None
         self.event = None
         self.name = ...
-        
+
+
+class TYPEMAPS(enum.Enum):
+    STR = 3
+    INT = 4
+    BOOL = 5
+    USER = 6
+    CHANNEL = 7
+    ROLE = 8
+    FLOAT = 10
+    ATTACHMENT = 11
