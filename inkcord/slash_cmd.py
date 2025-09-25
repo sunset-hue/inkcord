@@ -2,10 +2,12 @@ import typing
 from typing import Callable, Coroutine
 import functools
 import logging
+import inspect
+import re
 
 if typing.TYPE_CHECKING:
     from .http_gateway import FormatterThreading
-    from .exceptions import HandleableException
+    from .exceptions import HandleableException, GeneralException
 
 logger = logging.getLogger("inkcord-slash")
 handler = logging.StreamHandler()
@@ -13,8 +15,11 @@ handler.setFormatter(FormatterThreading("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)
 logger.addHandler(handler)
 class InteractionCommand:
     """An interaction command. Only for use for message slash commands, there are seperate classes for other types."""
-    def __init__(self, command: Callable | Coroutine):
+    def __init__(self):
         self.handlers = []
+        self.func: Callable | Coroutine | None = None
+        self.name = None
+        self.desc = None
         
     
     
@@ -26,3 +31,22 @@ class InteractionCommand:
                     logger.warning("Not a handleable exception. Reverting to builtin error handlers")
                     break
             self.handlers.append(func)
+    
+    
+    def _jsonify(self):
+        """INTERNAL!!!
+        jsonifies command data into a payload to be sent to sync with the discord gateway"""
+        pattern =re.compile("^[-_'\\p{L}\\p{N}\\p{sc=Deva}\\p{sc=Thai}]{1,32}$",flags=re.UNICODE)
+        matches = pattern.match(self.name) if self.name is not None else pattern.match(self.func.__name__) # pyright: ignore[reportOptionalMemberAccess]
+        if matches is not None:
+            raise GeneralException(f"{self.func.__name__ if self.name is None else self.name}._jsonify(): Name of command contains illegal unicode characters (somehow?). Please check if your function name returns a match with the following regex: {pattern.pattern}")
+        dictified = {
+            "name": self.name if self.name is not None else self.func.__name__,
+            "type": 1,
+            "description": self.desc if self.desc is not None else self.func.__doc__,
+            "options": self._jsonify_params()
+        }
+    
+    def _jsonify_params(self):
+        l = []
+        sig = inspect.signature(self.func).parameters

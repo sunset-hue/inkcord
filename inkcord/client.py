@@ -37,5 +37,11 @@ class Client:
         def functiond(**kwargs):
             self.listeners.append(EventListener(func,func.__name__))
     
+    
+    def command(self, name: str | None,description: str | None):
+        """
+    Decorator for a slash command to be registered into discord
+        """
+        
         
     # bitintents is placeholder for now
