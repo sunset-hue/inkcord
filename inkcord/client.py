@@ -1,5 +1,6 @@
 import typing
 import functools
+import json
 
 if typing.TYPE_CHECKING:
     from .shared_types import BitIntents
@@ -53,4 +54,8 @@ class Client:
 
     async def sync(self):
         connection = self._CONN.setup(self.token,self.intents,self.version,True,self.listeners)
-        connection.
+        curr_synced = connection.send_request("GET",f"applications/{self._CONN.app_id}/commands",None)
+        synced = json.loads(curr_synced.result().read())
+        if len(synced) > len(self.slash_cmds):
+            
+        # need to get the app id somehow

@@ -199,6 +199,7 @@ class AsyncClient:
                     logger.info(f"Successfully connected to discord gateway with session id: {serialized_data["d"]["session_id"]}")
                     self.session_id = serialized_data["d"]["session_id"]
                     self.resume_url = serialized_data["d"]["resume_gateway_url"]
+                    self.app_id = serialized_data["d"]["application"]["id"]
                 # from here on, the queue stuff is about to start
                 event_queue.append(message)
                 thread_event = GatewayEvent(
