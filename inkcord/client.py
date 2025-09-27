@@ -5,6 +5,7 @@ if typing.TYPE_CHECKING:
     from .shared_types import BitIntents
     from .event_handling import EventListener
     from .http_gateway import AsyncClient
+    from .slash_cmd import InteractionCommand
 
 
 
@@ -14,17 +15,15 @@ class HttpClient:
 
 class Client:
     "A class that uses http and websocket interactions."
-    def __init__(self,intents: BitIntents,token: str):
+    def __init__(self,intents: BitIntents,token: str,version: int = 10):
         self.intents = intents
         self.current_interaction: dict = {}
-        self.slash_cmds = ...
+        self.slash_cmds = []
         self.listeners = []
         self._CONN = AsyncClient.setup(token,intents,version = 10,gateway=True,event_listners= self.listeners)
-        """It should be VERY obvious why you shouldn't touch this attribute, but I (sunset-hue) made it read-only just in case"""
+        self.version = version
+        """Please don't touch this it'll break your bot"""
     
-    def __getattribute__(self, name: str) -> typing.Any:
-        if name == "_CONN":
-            return ...
         # this is the read only part that i described earlier
     
     def listener(self,func: typing.Callable):
@@ -38,10 +37,20 @@ class Client:
             self.listeners.append(EventListener(func,func.__name__))
     
     
-    def command(self, name: str | None,description: str | None):
+    def command(self, name: str | None,description: str | None,func: typing.Callable):
         """
-    Decorator for a slash command to be registered into discord
+        Decorator for a slash command to be registered into discord
         """
-        
-        
-    # bitintents is placeholder for now
+        cmds = InteractionCommand(func)
+        @functools.wraps(func)
+        def add_to_list(**kwargs):
+            
+            cmds.desc = description
+            cmds.name = name
+            self.slash_cmds.append(cmds)
+        return cmds
+        # to get chaining so error handling can be used
+
+    async def sync(self):
+        connection = self._CONN.setup(self.token,self.intents,self.version,True,self.listeners)
+        connection.

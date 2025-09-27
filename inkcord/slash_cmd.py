@@ -4,6 +4,7 @@ import functools
 import logging
 import inspect
 import re
+import json
 
 if typing.TYPE_CHECKING:
     from .http_gateway import FormatterThreading
@@ -16,9 +17,9 @@ handler.setFormatter(FormatterThreading("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)
 logger.addHandler(handler)
 class InteractionCommand:
     """An interaction command. Only for use for message slash commands, there are seperate classes for other types."""
-    def __init__(self):
+    def __init__(self,func):
         self.handlers = []
-        self.func: Callable | Coroutine | None = None
+        self.func: Callable | Coroutine | None = func
         self.name = None
         self.desc = None
         
@@ -47,6 +48,7 @@ class InteractionCommand:
             "description": self.desc if self.desc is not None else self.func.__doc__,
             "options": self._jsonify_params()
         }
+        return json.dumps(dictified)
     
     def _jsonify_params(self):
         l = []

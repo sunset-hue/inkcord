@@ -20,6 +20,7 @@ import logging
 import websockets
 import platform
 import threading
+import random
     
 if typing.TYPE_CHECKING:    
     from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
@@ -174,9 +175,11 @@ class AsyncClient:
                 logger.debug(message)
             try:
                 if serialized_data["op"] == 10:
-                    self.interval = serialized_data["d"]["heartbeat_interval"]
+                    self.interval = serialized_data["d"]["heartbeat_interval"] * random.uniform(0,1)
                 await self.send_heartbeat(serialized_data,gateway)
                 logger.info(f"Initiated heartbeat at {self.interval}ms.")
+                self.interval = serialized_data["d"]["heartbeat_interval"]
+                # to reset back to normal heartbeat time
                     # this shouldn't need a while true loop since it checks whether event recieved is a heartbeat or not
                 await gateway.send(message=json.dumps({
                         "op": 2,
