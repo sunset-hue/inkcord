@@ -175,7 +175,9 @@ class AsyncClient:
                 logger.debug(message)
             try:
                 if serialized_data["op"] == 10:
-                    self.interval = serialized_data["d"]["heartbeat_interval"] * random.uniform(0,1)
+                    self.jitter = random.uniform(0,1)
+                    self.interval = serialized_data["d"]["heartbeat_interval"] * self.jitter
+                logger.info(f"Sending first heartbeat with a jitter of {self.jitter}")
                 await self.send_heartbeat(serialized_data,gateway)
                 logger.info(f"Initiated heartbeat at {self.interval}ms.")
                 self.interval = serialized_data["d"]["heartbeat_interval"]
