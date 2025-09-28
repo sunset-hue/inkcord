@@ -150,7 +150,7 @@ class AsyncClient:
             if self._debug:    
                 logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
             curr_threads += 1
-            curr_thread = threading.Thread(target=handle_events,args=(self,job,self.loop,self.event_listeners,logger,self.gateway_conn))
+            curr_thread = threading.Thread(target=handle_events,args=(self,job,self.loop,self.event_listeners,logger,self.gateway_conn)) # type: ignore
             job.event = srlized["t"]
             job.name = curr_thread.name # pyright: ignore[reportAttributeAccessIssue]
             self.threadjobs.append(job)
@@ -166,7 +166,7 @@ class AsyncClient:
     
     async def establish_handshake(self):
         logger.info("Handshake routine was successfully called. Initiating handshake...")
-        gateway = await websockets.connect(self.gate_url)
+        gateway = await websockets.connect(self.gate_url) # type: ignore
         self.gateway_conn = gateway
         event_queue = []
         async for message in gateway:
@@ -246,4 +246,6 @@ class AsyncClient:
                 logger.error("Invalid session. Reverting to handshake")
                 await self.establish_handshake()
             
-        
+    
+    async def handle_http_ratelimit(self):
+        # type: ignore

@@ -24,7 +24,7 @@ async def handle_events(bot,job: ThreadJob | None,loop: asyncio.AbstractEventLoo
     # i don't wannt errors here
     async for event in events:
         srlzed = json.loads(event)  
-        handler = [i for i in handlers if i.event == srlzed["op"]]
+        handler = [i for i in handlers if i.event == srlzed["op"]] # type: ignore
         if len(handler) > 0:
             logger.info(f"Found event listener for event name {srlzed["t"]}. Running routine now...")
             result = loop.run_in_executor(None,handler[0].func)

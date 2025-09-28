@@ -7,6 +7,7 @@ if typing.TYPE_CHECKING:
     from .event_handling import EventListener
     from .http_gateway import AsyncClient
     from .slash_cmd import InteractionCommand
+    from .resourceid import ResourceID
 
 
 
@@ -19,7 +20,7 @@ class Client:
     def __init__(self,intents: BitIntents,token: str,version: int = 10):
         self.intents = intents
         self.current_interaction: dict = {}
-        self.slash_cmds = []
+        self.slash_cmds: list[InteractionCommand] = []
         self.listeners = []
         self._CONN = AsyncClient.setup(token,intents,version = 10,gateway=True,event_listners= self.listeners)
         self.version = version
@@ -38,24 +39,35 @@ class Client:
             self.listeners.append(EventListener(func,func.__name__))
     
     
-    def command(self, name: str | None,description: str | None,func: typing.Callable):
+    def command(self, name: str | None,description: str | None,func: typing.Callable,private: ResourceID | None):
         """
-        Decorator for a slash command to be registered into discord
+        Decorator for a slash command to be registered into discord.
+        :param name: name of slash command to be registered.
+        :param description: description of slash command to be registered.
+        :param private: the guild ID to register your command to, if applicable.
         """
         cmds = InteractionCommand(func)
         @functools.wraps(func)
         def add_to_list(**kwargs):
             
-            cmds.desc = description
-            cmds.name = name
+            cmds.desc = description # type: ignore
+            cmds.name = name # type: ignore
+            cmds.private = private # type: ignore
             self.slash_cmds.append(cmds)
         return cmds
         # to get chaining so error handling can be used
 
     async def sync(self):
-        connection = self._CONN.setup(self.token,self.intents,self.version,True,self.listeners)
+        connection = self._CONN.setup(self.token,self.intents,self.version,True,self.listeners) # type: ignore
         curr_synced = connection.send_request("GET",f"applications/{self._CONN.app_id}/commands",None)
-        synced = json.loads(curr_synced.result().read())
-        if len(synced) > len(self.slash_cmds):
-            
+        synced = json.loads(curr_synced.result().read()) # type: ignore
+        if len(synced) < len(self.slash_cmds):
+            for cmd in self.slash_cmds:
+                if cmd not in synced:
+                    if cmd.private is None: # type: ignore
+                        connection.send_request("POST",f"applications/{self._CONN.app_id}/commands",json.loads(cmd._jsonify()))
+                                                                                        # this is pretty redundant but i'm too lazy to change the _jsonify func
+                    else:
+                        connection.send_request("POST",f"applications/{self._CONN.app_id}/guilds/{cmd.private}/commands",json.loads(cmd._jsonify())) # type: ignore
+                    
         # need to get the app id somehow
