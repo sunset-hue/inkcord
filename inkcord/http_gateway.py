@@ -121,6 +121,9 @@ class AsyncClient:
             self.requests_left = result_to_check.result().headers.getallmatchingheaders("X-Ratelimit-Remaining")[0]
             if result_to_check.result().getcode() == 429:
                 logger.warning("Reached ratelimit, checking fields for when to send again.")
+                logger.warning(f"Sending pending request(s) in {jsonified["retry_after"]}s.")
+                self.retry_after = jsonified["retry_after"]
+                self.loop.run_in_executor(None,self.handle_http_ratelimit,[self.http_connection.request],method)    
             if result_to_check.result().getcode() >= 400:
                 raise RequestException("send_request(): Raised RequestException due to response code being above (or equal to) 400, indicating an error. Check authentication or to make sure that the request body is not malformed.")
             if int(self.requests_left.split(":")[1]) < 5:
@@ -253,5 +256,6 @@ class AsyncClient:
                 await self.establish_handshake()
             
     
-    async def handle_http_ratelimit(self):
-        
+    async def handle_http_ratelimit(self,curr_requests: list[typing.Callable],method: typing.Literal['POST','GET','PUT','DELETE','PATCH']):
+        await asyncio.sleep(self.retry_after)
+        if 
