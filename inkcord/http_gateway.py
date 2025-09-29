@@ -116,11 +116,11 @@ class AsyncClient:
             self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",None,self.headers)
         else:
             request_to_check = self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
-            result_to_check = self.loop.run_in_executor(None,self.http_connection.getresponse)
-            self.reset_after = result_to_check.result().headers.getallmatchingheaders("X-Ratelimit-Reset-After")[0].split(":") # we can ensure there's only one of these
+            result_to_check = self.loop.run_in_executor(None,self.http_connection.getresponse) # we can ensure there's only one of these
+            jsonified = json.loads(result_to_check.result().read())
             self.requests_left = result_to_check.result().headers.getallmatchingheaders("X-Ratelimit-Remaining")[0]
             if result_to_check.result().getcode() == 429:
-                logger.warning("Reached ratelimit, checking headers for when to send again.")
+                logger.warning("Reached ratelimit, checking fields for when to send again.")
             if result_to_check.result().getcode() >= 400:
                 raise RequestException("send_request(): Raised RequestException due to response code being above (or equal to) 400, indicating an error. Check authentication or to make sure that the request body is not malformed.")
             if int(self.requests_left.split(":")[1]) < 5:
