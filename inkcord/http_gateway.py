@@ -117,8 +117,14 @@ class AsyncClient:
         else:
             request_to_check = self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
             result_to_check = self.loop.run_in_executor(None,self.http_connection.getresponse)
-            if result_to_check.result().getcode() >= 200:
-                raise RequestException("send_request(): Raised RequestException due to response code being above 200, indicating an error. Check authentication or to make sure that the request body is not malformed.")
+            self.reset_after = result_to_check.result().headers.getallmatchingheaders("X-Ratelimit-Reset-After")[0].split(":") # we can ensure there's only one of these
+            self.requests_left = result_to_check.result().headers.getallmatchingheaders("X-Ratelimit-Remaining")[0]
+            if result_to_check.result().getcode() == 429:
+                logger.warning("Reached ratelimit, checking headers for when to send again.")
+            if result_to_check.result().getcode() >= 400:
+                raise RequestException("send_request(): Raised RequestException due to response code being above (or equal to) 400, indicating an error. Check authentication or to make sure that the request body is not malformed.")
+            if int(self.requests_left.split(":")[1]) < 5:
+                logger.warning("!!! Bot may hit ratelimit soon, remaining requests less than 5. !!! Please remove any unnecessary API calls if you want to prevent this from happening.")
             else:
                 return result_to_check 
     
@@ -248,4 +254,4 @@ class AsyncClient:
             
     
     async def handle_http_ratelimit(self):
-        # type: ignore
+        
