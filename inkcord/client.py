@@ -30,9 +30,6 @@ class Client:
     
     def listener(self,func: typing.Callable):
         """creates a listener for a specific event that's not handled by the library.
-           To create the listener for the specific event, keep the name of the event as the function name. If the event name is not provided in the function name, then one of 2 things will happen:
-           - it will search for the name in the decorator function itself 
-           - it will derive the event from the arguments provided (only in rare cases where it's obvious and not ambiguous)
         """
         @functools.wraps(func)
         def functiond(**kwargs):
@@ -40,11 +37,16 @@ class Client:
     
     
     def command(self, name: str | None,description: str | None,func: typing.Callable,private: ResourceID | None):
-        """
-        Decorator for a slash command to be registered into discord.
-        :param name: name of slash command to be registered.
-        :param description: description of slash command to be registered.
-        :param private: the guild ID to register your command to, if applicable.
+        """A decorator for making slash commands.
+
+        Args:
+            name (str | None): The name of the command.
+            description (str | None): The description of the command.
+            func (typing.Callable): The function to be decorated (don't actually fill this in, you're supposed to use it as a decorator)
+            private (ResourceID | None): If not None, this slash command is only synced to one guild.
+
+        Returns:
+            inkcord.InteractionCommand : The converted function, with extra metadata attached.
         """
         cmds = InteractionCommand(func)
         @functools.wraps(func)
@@ -58,6 +60,9 @@ class Client:
         # to get chaining so error handling can be used
 
     async def sync(self):
+        """
+        Syncs all commands attached to this bot.
+        """
         connection = self._CONN.setup(self.token,self.intents,self.version,True,self.listeners) # type: ignore
         curr_synced = connection.send_request("GET",f"applications/{self._CONN.app_id}/commands",None)
         synced = json.loads(curr_synced.result().read()) # type: ignore

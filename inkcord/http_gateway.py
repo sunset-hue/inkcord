@@ -21,6 +21,7 @@ import websockets
 import platform
 import threading
 import random
+import urllib.parse
     
 if typing.TYPE_CHECKING:    
     from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
@@ -86,12 +87,7 @@ class AsyncClient:
     
     
     def send_multiple_requests(self, *requests: Request):
-        """Lowest level interface in this library to send and recieve the result of multiple requests.
-        :param requests: The list of requests to send and recieve the result of.
-        :type requests: inkcord.Request
-        :returns: List[asyncio.Future] -- The result of the requests
-        :raises: Exception placeholder
-        NOTE: Don't use this function unless necessary, there are much simpler ways to send requests."""
+        """Lowest level interface in this library to send and recieve the result of multiple requests."""
         futures: list[asyncio.Future] = []
         for request in requests:
             self.loop.run_in_executor(None,self.http_connection.request,request.method,f"{self.path}{request.api_route}",request.data,self.headers)
@@ -101,20 +97,10 @@ class AsyncClient:
             # absolutely no idea if the *args argument is for the func or not
         return futures
     
-    def send_request(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],route: str,data: dict | None):
-        """Lowest level interface in this library to send and recieve the result of a request
-        :param method: The method to send to the discord API
-        :type method: Literal['POST','GET','PUT','DELETE','PATCH']
-        :param route: The route to send the request to. Has to be valid.
-        :type route: str
-        :param data: A dictionary containing the information that you're sending with the request.
-        :type data: dict[str,Any]
-        :returns: asyncio.Future
-        :raises: RequestException
-        NOTE: Don't use this function unless necessary, there are much simpler ways to send requests.
-        """
+    def send_request(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],route: str,data: dict | None,**params):
+        """Lowest level interface in this library to send and recieve the result of a request"""
         if method == "GET":
-            self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",None,self.headers)
+            self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}{urllib.parse.urlencode(params)}",None,self.headers)
         else:
             request_to_check = self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
             result_to_check = self.loop.run_in_executor(None,self.http_connection.getresponse) # we can ensure there's only one of these

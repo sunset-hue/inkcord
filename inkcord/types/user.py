@@ -6,13 +6,20 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
+import typing
 from typing import Any, List
-from ..resourceid import ResourceID
-from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
 import json
+
+if typing.TYPE_CHECKING:
+    from ..resourceid import ResourceID
+    from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
+    from .guild import PartialGuild
+
 
 
 class User:
+    """A python representation of the user model from the discord API.
+    """
     def __init__(self,_data: dict[str,Any]):
         self.__data = _data
         self._locale = _data["locale"]
@@ -91,16 +98,67 @@ class User:
     
     
     async def get_user(self,bot,id: ResourceID):
-        """
-        Gets a User object from an id.
-        :param bot: This param isn't typehinted to prevent circular imports, but this is supposed to be an `inkcord.Client`.
-        :param id: The id of the user. Can be an int or a ResourceID.
+        """Gets a user by the ID.
+
+        Args:
+            bot (inkcord.Client): Not typehinted to prevent circular imports
+            id (ResourceID): The ID of the user, can be int or ResourceID.
+
+        Returns:
+            inkcord.User : The returned user id.
         """
         request = bot._CONN.send_request("GET",f"users/{id}",None)
         result = json.loads(request.result().read())
         return self.__init__(result)
-        # the init is here because just doing self() raised an error   
+        # the init is here because just doing self() raised an error
     
+    async def modify_self(self,bot,username: str | None, avatar,banner):
+        """ Modifies the current user.
+
+        Args:
+            bot (inkcord.Client): Not typehinted to prevent circular imports.
+            username (str | None): Name of user.
+            avatar (None): Placeholder for now. 
+            banner (None): Placeholder for now.
+
+        Returns:
+            inkcord.User : The modified user.
+        """
+        request = bot._CONN.send_request("PATCH","users/@me",{
+            "username": username
+            # the rest needs some extra logic
+        })
+        result = json.loads(request.result().read())
+        return self.__init__(result)
+    
+    async def current_user_guilds(self,bot,before_id: ResourceID | None,after_id: ResourceID | None,with_counts: bool,limit: int = 200):
+        """Returns a list of inkcord.PartialGuild objects, which represents the guilds this User is currently in.
+
+        Args:
+            bot (inkcord.Client): Not typehinted to prevent circular imports.
+            before_id (ResourceID | None): The guild id at which to retrieve guild objects before.
+            after_id (ResourceID | None): The guild id at which to retrieve guild objects after.
+            with_counts (bool): Whether to return the approximate member counts/presence counts in the responses.
+            limit (int, optional): How much to retrieve. Defaults to 200(which is the max).
+            
+        Returns:
+            list[inkcord.PartialGuild]: The retrieved PartialGuild objects.
+        """
+        request = bot._CONN.send_request("GET","users/@me/guilds",None,before_id=before_id,after_id=after_id,with_counts=with_counts,limit=limit)
+        result: list = json.loads(request.result().read())
+        formatted_rslt = [PartialGuild(gld) for gld in result]
+        return formatted_rslt
+    
+    
+    async def user_guild_member(self,id: ResourceID):
+        """The guild member object that the user has in the guild.
+
+        Args:
+            id (ResourceID): The id of the guild to retrieve.
+        
+        Returns:
+            inkcord.GuildMember: The guild member.
+        """
     
     
     
