@@ -68,6 +68,7 @@ class AsyncClient:
         self.thread_count = psutil.cpu_count()
         self.slash_cmds = []
         self._debug = True if "debug" in os.listdir("..") else False
+        self.pending_reqs = []
         if self.thread_count == 1:
             raise GeneralException("bro how the HELL do you only have 1 thread is ur computer from the 1990s or something idek how this would happen")
         # max amount of threads is limited to amt of cores because i saw it on a stack overflow thing
@@ -123,7 +124,8 @@ class AsyncClient:
                 logger.warning("Reached ratelimit, checking fields for when to send again.")
                 logger.warning(f"Sending pending request(s) in {jsonified["retry_after"]}s.")
                 self.retry_after = jsonified["retry_after"]
-                self.loop.run_in_executor(None,self.handle_http_ratelimit,[self.http_connection.request],method)    
+                self.pending_reqs.append([method,data,route])
+                self.loop.run_in_executor(None,self.handle_http_ratelimit)    
             if result_to_check.result().getcode() >= 400:
                 raise RequestException("send_request(): Raised RequestException due to response code being above (or equal to) 400, indicating an error. Check authentication or to make sure that the request body is not malformed.")
             if int(self.requests_left.split(":")[1]) < 5:
@@ -256,6 +258,8 @@ class AsyncClient:
                 await self.establish_handshake()
             
     
-    async def handle_http_ratelimit(self,curr_requests: list[typing.Callable],method: typing.Literal['POST','GET','PUT','DELETE','PATCH']):
+    async def handle_http_ratelimit(self):
         await asyncio.sleep(self.retry_after)
-        if 
+        for method,data,route in self.pending_reqs:
+            self.send_request(method,route,data)
+            logger.info("Sending missed request....")
