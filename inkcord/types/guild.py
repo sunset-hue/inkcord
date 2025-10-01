@@ -1,5 +1,5 @@
 from ..resourceid import ResourceID
-
+from permissions import Permissions
 
 
 class Guild:
@@ -42,7 +42,7 @@ class Guild:
     @property
     def permissions(self) -> Permissions:
         """Permissions for the specific user in the guild."""
-        return Permissions()
+        return Permissions(self.__data["permissions"])
         # this is a placeholder for now
     
     @property

@@ -6,10 +6,10 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
-from typing import Callable, Any, List
+from typing import Any, List
 from ..resourceid import ResourceID
 from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
-
+import json
 
 
 class User:
@@ -90,12 +90,16 @@ class User:
         return PrimaryGuild(self.__data["primary_guild"]) if self.__data.get("primary_guild") else None
     
     
-
-    
-
-    
-    
-    
+    async def get_user(self,bot,id: ResourceID):
+        """
+        Gets a User object from an id.
+        :param bot: This param isn't typehinted to prevent circular imports, but this is supposed to be an `inkcord.Client`.
+        :param id: The id of the user. Can be an int or a ResourceID.
+        """
+        request = bot._CONN.send_request("GET",f"users/{id}",None)
+        result = json.loads(request.result().read())
+        return self.__init__(result)
+        # the init is here because just doing self() raised an error   
     
     
     
