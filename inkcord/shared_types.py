@@ -69,3 +69,9 @@ class TYPEMAPS(enum.Enum):
     ROLE = 8
     FLOAT = 10
     ATTACHMENT = 11
+
+
+class AvatarDecoration:
+    def __init__(self,_data):
+        self.sku = _data["sku_id"]
+        self.asset = f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"

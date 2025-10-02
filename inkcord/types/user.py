@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
     from .guild import PartialGuild
+    from .guild_mem import GuildMember
 
 
 
@@ -150,15 +151,20 @@ class User:
         return formatted_rslt
     
     
-    async def user_guild_member(self,id: ResourceID):
+    async def user_guild_member(self,bot,id: ResourceID):
         """The guild member object that the user has in the guild.
 
         Args:
-            id (ResourceID): The id of the guild to retrieve.
+            id (ResourceID): The id of the guild to retrieve the guild member object from.
         
         Returns:
             inkcord.GuildMember: The guild member.
         """
+        request = bot._CONN.send_request("GET",f"users/@me/guilds/{id}/member")
+        result = GuildMember(json.loads(request.result().read()))
+        result.user = self
+        return result
+        
     
     
     
