@@ -97,6 +97,49 @@ class Guild:
         # this is a placeholder for now
     
     @property
-    def afk_channel_id(self) -> int:
+    def afk_channel_id(self) -> ResourceID | None:
         """AFK channel id."""
-        return self.__data.get("afk_channel_id")
+        return ResourceID(self.__data["afk_channel_id"]) if self.__data.get("afk_channel_id") else None
+    
+    @property
+    def afk_timeout(self) -> int:
+        """The AFK timeout in seconds."""
+        return self.__data["afk_timeout"]
+
+    @property
+    def widget_enabled(self) -> bool | None:
+        """Whether the server widget is enabled."""
+        return self.__data.get("widget_enabled")
+    
+    @property
+    def widget_channel_id(self) -> ResourceID | None:
+        """The ID of the widget channel."""
+        return ResourceID(self.__data["widget_channel_id"]) if self.__data.get("widget_channel_id") else None
+    
+    @property
+    def verification_level(self) -> int:
+        """Verification level of the guild.
+        0 - unrestricted
+        1 - must have a verified email on the account.
+        2 - must be registered on discord for longer than 5 minutes.
+        3 - must be registered on discord for longer than 10 minutes.
+        4 - must have a verified phone number"""
+        return self.__data["verification_level"]
+    
+    @property
+    def default_message_notif_level(self) -> int:
+        """The default message notification level of the guild.
+        1 - only mentions
+        2 - all messages"""
+        return self.__data["default_message_notifications"]
+    
+    @property
+    def explicit_content_filter(self) -> int:
+        """The explicit content filter level of the guild.
+        0 - disabled 
+        1 - members without roles
+        2 - all members"""
+        return self.__data["explicit_content_filter"]
+        
+    
+    

@@ -98,7 +98,7 @@ class User:
         return PrimaryGuild(self.__data["primary_guild"]) if self.__data.get("primary_guild") else None
     
     
-    async def get_user(self,bot,id: ResourceID):
+    def get_user(self,bot,id: ResourceID):
         """Gets a user by the ID.
 
         Args:
@@ -113,7 +113,7 @@ class User:
         return self.__init__(result)
         # the init is here because just doing self() raised an error
     
-    async def modify_self(self,bot,username: str | None, avatar,banner):
+    def modify_self(self,bot,username: str | None, avatar,banner):
         """ Modifies the current user.
 
         Args:
@@ -132,7 +132,7 @@ class User:
         result = json.loads(request.result().read())
         return self.__init__(result)
     
-    async def current_user_guilds(self,bot,before_id: ResourceID | None,after_id: ResourceID | None,with_counts: bool,limit: int = 200):
+    def current_user_guilds(self,bot,before_id: ResourceID | None,after_id: ResourceID | None,with_counts: bool,limit: int = 200):
         """Returns a list of inkcord.PartialGuild objects, which represents the guilds this User is currently in.
 
         Args:
@@ -151,7 +151,7 @@ class User:
         return formatted_rslt
     
     
-    async def user_guild_member(self,bot,id: ResourceID):
+    def user_guild_member(self,bot,id: ResourceID):
         """The guild member object that the user has in the guild.
 
         Args:
@@ -160,11 +160,31 @@ class User:
         Returns:
             inkcord.GuildMember: The guild member.
         """
-        request = bot._CONN.send_request("GET",f"users/@me/guilds/{id}/member")
+        request = bot._CONN.send_request("GET",f"users/@me/guilds/{id}/member",None)
         result = GuildMember(json.loads(request.result().read()))
         result.user = self
         return result
-        
     
+    def leave_guild(self,bot,id: ResourceID):
+        """Leaves the requested guild, from the ID.
+
+        Args:
+            bot: Not typehinted to prevent circular imports (inkcord.Client)
+            id (ResourceID): The ID of the guild to leave.
+        
+        Returns:
+            nothing
+        """
+        bot._CONN.send_request("DELETE",f"users/@me/guilds/{id}",None)
+    
+    
+    def create_dm(self,bot,recipient: ResourceID):
+        """Creates a DM with the specified user, from the ID.
+
+        Args:
+            bot: Not typehinted to prevent circular imports (inkcord.Client) 
+            recipient (ResourceID): The ID of the user to create a DM with.
+        """
+        
     
     

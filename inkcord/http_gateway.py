@@ -99,7 +99,7 @@ class AsyncClient:
     
     def send_request(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],route: str,data: dict | None,**params):
         """Lowest level interface in this library to send and recieve the result of a request"""
-        if method == "GET":
+        if method == "GET" or method == "DELETE":
             self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}{urllib.parse.urlencode(params)}",None,self.headers)
         else:
             request_to_check = self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
