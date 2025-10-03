@@ -1,6 +1,10 @@
-from ..resourceid import ResourceID
-from permissions import Permissions
+import typing
 
+if typing.TYPE_CHECKING:
+    from ..resourceid import ResourceID
+    from permissions import Permissions
+    from .role import Role
+    from .emoji import Emoji
 
 class PartialGuild:
     
@@ -142,4 +146,20 @@ class Guild:
         return self.__data["explicit_content_filter"]
         
     
+    @property
+    def roles(self) -> list[Role]:
+        """All the roles in the guild."""
+        return [Role(data) for data in self.__data["roles"]]
     
+    @property
+    def emojis(self) -> list[Emoji]:
+        """All the emojis in the guild."""
+        return [Emoji(data) for data in self.__data["emojis"]]
+    
+    @property
+    def mfa_level(self) -> int:
+        """The MFA level of this guild (multi factor authentication)
+        can be one of 2 values:
+        None - 0
+        Elevated - 1"""
+        return self.__data["mfa_level"]
