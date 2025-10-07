@@ -73,13 +73,13 @@ class TYPEMAPS(enum.Enum):
 
 class AvatarDecoration:
     def __init__(self,_data):
-        self.sku = _data["sku_id"]
+        self.sku: int = _data["sku_id"]
         self.asset = f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"
 
 class WelcomeScreenChannel:
     def __init__(self,_data):
         self.channel_id: int = _data["channel_id"]
-        self.description = _data["description"]
+        self.description: str = _data["description"]
 
 
 class WelcomeScreen:
@@ -87,3 +87,21 @@ class WelcomeScreen:
         self.desc = _data["description"]
         self.welcome_screen_channels = [WelcomeScreenChannel(data) for data in _data["welcome_channels"]]
 
+class Sticker:
+    def __init__(self,_data):
+        self.id: int = _data["id"]
+        """ID of sticker"""
+        self.pack_id: int | None = _data.get("pack_id")
+        """For builtin stickers, the ID of the pack this sticker is from."""
+        self.name: str = _data["name"]
+        """The name of the sticker."""
+        self.description: str = _data.get("description")
+        """Sticker description. May be None."""
+        self.tags = _data["tags"]
+        """Autocomplete/suggestion tags for the sticker."""
+        self.available: bool | None = _data.get("available")
+        """Whether this sticker can be used, can be False due to server boost level downgrading"""
+        self.guild_id: int | None = _data.get("guild_id")
+        """The guild where this guild id originated from"""
+        self.sort_value: int = _data.get("sort_value")
+        """This sticker's sort order within it's standard pack, if applicable"""

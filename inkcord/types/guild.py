@@ -1,11 +1,12 @@
 import typing
+import datetime
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from permissions import Permissions
     from .role import Role
     from .emoji import Emoji
-    from ..shared_types import WelcomeScreen
+    from ..shared_types import WelcomeScreen, Sticker
 
 class PartialGuild:
     
@@ -254,4 +255,16 @@ class Guild:
         return WelcomeScreen(self.__data["welcome_screen"]) if self.__data.get("welcome_screen") else None
     
     @property
+    def stickers(self) -> list[Sticker] | None:
+        """A list of all the stickers in this guild. May be None."""
+        return [Sticker(sticker) for sticker in self.__data["stickers"]] if self.__data.get("stickers") else None
     
+    @property
+    def boost_progress_bar_enabled(self) -> bool:
+        """Whether the boost progress bar is enabled."""
+        return self.__data["premium_progress_bar_enabled"]
+    
+    @property
+    def safety_alerts_channel_id(self) -> ResourceID | None:
+        """The channel ID where Discord sends safety alerts to in this guild. May be None."""
+        return ResourceID(self.__data["safety_alerts_channel_id"]) if self.__data.get("safety_alerts_channel_id") else None
