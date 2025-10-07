@@ -163,3 +163,15 @@ class Guild:
         None - 0
         Elevated - 1"""
         return self.__data["mfa_level"]
+
+    @property
+    def application_id(self) -> ResourceID | None:
+        """The App ID of the app that created the guild, if applicable."""
+        return self.__data.get("application_id")
+    
+    @property
+    def system_channel_id(self) -> ResourceID | None:
+        """System channel ID, if applicable."""
+        return self.__data.get("system_channel_id")
+
+    

@@ -135,6 +135,18 @@ class AsyncClient:
                 await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
                 logger.debug("Heartbeat sent immediately.")
     
+    async def send_heartbeat_forever(self,gateway: websockets.ClientConnection):
+        while True:
+            a = await asyncio.sleep(self.interval / 1000) if self.current_event["op"] != 1 else None # effectively makes sure it doesn't wait if the op is 1 (this might seem chatgpt like but I just need clarification for myself ok T_T)
+            if self.current_event["op"] == 11:
+                await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
+                logger.debug("Heartbeat sent.")
+            if self.current_event["op"] == 1:
+                await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
+                logger.debug("Heartbeat sent immediately.")
+                
+                
+    
     async def queue_logic(self,events: websockets.ClientConnection):
         # manages the amount of threads and what each thread is doing
         self.threadjobs: list[ThreadJob] = []
@@ -167,6 +179,7 @@ class AsyncClient:
         self.gateway_conn = gateway
         event_queue = []
         async for message in gateway:
+            self.current_event = json.loads(message)
             serialized_data = json.loads(message)
             if self._debug:
                 logger.debug(message)
@@ -178,6 +191,8 @@ class AsyncClient:
                 await self.send_heartbeat(serialized_data,gateway)
                 logger.info(f"Initiated heartbeat at {self.interval}ms.")
                 self.interval = serialized_data["d"]["heartbeat_interval"]
+                self.loop.run_forever()
+                self.loop.create_task(self.send_heartbeat_forever(self.gateway_conn)) # this should work, hopefully it doesn't block
                 # to reset back to normal heartbeat time
                     # this shouldn't need a while true loop since it checks whether event recieved is a heartbeat or not
                 await gateway.send(message=json.dumps({
