@@ -268,3 +268,15 @@ class Guild:
     def safety_alerts_channel_id(self) -> ResourceID | None:
         """The channel ID where Discord sends safety alerts to in this guild. May be None."""
         return ResourceID(self.__data["safety_alerts_channel_id"]) if self.__data.get("safety_alerts_channel_id") else None
+
+    
+    @classmethod
+    def get_guild(cls,bot,id: ResourceID, with_counts: bool = False):
+        """Gets a guild, and constructs a `inkcord.Guild` object out of it.
+
+        Args:
+            bot (inkcord.Client): supposed to be inkcord.Client, not typehinted to prevent circular imports.
+            id (inkcord.ResourceID): The id of the guild to retrieve.
+            with_counts (bool): Whether to return the fields `approximate_member_count` and `approximate_presence_count` in the resulting guild.
+        """
+        request = bot._CONN.send_request("GET",f"guilds/{id}",with_counts=with_counts)
