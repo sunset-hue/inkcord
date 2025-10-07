@@ -75,3 +75,15 @@ class AvatarDecoration:
     def __init__(self,_data):
         self.sku = _data["sku_id"]
         self.asset = f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"
+
+class WelcomeScreenChannel:
+    def __init__(self,_data):
+        self.channel_id: int = _data["channel_id"]
+        self.description = _data["description"]
+
+
+class WelcomeScreen:
+    def __init__(self,_data):
+        self.desc = _data["description"]
+        self.welcome_screen_channels = [WelcomeScreenChannel(data) for data in _data["welcome_channels"]]
+

@@ -5,6 +5,7 @@ if typing.TYPE_CHECKING:
     from permissions import Permissions
     from .role import Role
     from .emoji import Emoji
+    from ..shared_types import WelcomeScreen
 
 class PartialGuild:
     
@@ -61,6 +62,9 @@ class Guild:
     # oh no this is gonna be a ton of work T_T
     def __init__(self,_data):
         self.__data = _data
+    
+    def __str__(self):
+        return self.name
         
     
     @property
@@ -167,11 +171,87 @@ class Guild:
     @property
     def application_id(self) -> ResourceID | None:
         """The App ID of the app that created the guild, if applicable."""
-        return self.__data.get("application_id")
+        return ResourceID(self.__data.get("application_id")) if self.__data.get("application_id") else None
     
     @property
     def system_channel_id(self) -> ResourceID | None:
         """System channel ID, if applicable."""
-        return self.__data.get("system_channel_id")
+        return ResourceID(self.__data.get("system_channel_id")) if self.__data.get("system_channel_id") else None
 
+    @property
+    def rules_channel_id(self) -> ResourceID | None:
+        """Rules channel id, if applicable."""
+        return ResourceID(self.__data.get("rules_channel_id")) if self.__data.get("rules_channel_id") else None
+    
+    @property
+    def max_presences(self) -> int | None:
+        """The number of presences in this guild. Assume this to be always none aside from the largest guilds."""
+        return self.__data.get("max_presences")
+
+    @property
+    def max_members(self) -> int | None:
+        """The cap for the max members in this guild."""
+        return self.__data.get("max_members")
+
+    @property
+    def vanity_url(self) -> str | None:
+        """The vanity URL for this guild."""
+        return f"https://discord.gg/{self.__data.get("vanity_url_code")}"
+
+    @property
+    def description(self) -> str | None:
+        """The description of the guild."""
+        return self.__data.get("description")
+
+    @property
+    def banner(self) -> str | None:
+        """The CDN link for the guild banner."""
+        return f"https://cdn.discordapp.com/banners/{self.id}/{self.__data.get("banner")}" if self.__data.get("banner") else None
+    
+    @property
+    def premium_tier(self) -> int:
+        """The premium tier of the guild (server boosts tier). Value ranges from 0 to 3."""
+        return self.__data["premium_tier"]
+
+    @property
+    def number_boosts(self) -> int:
+        """The number of server boosts the guild has. May be None."""
+        return self.__data.get("premium_subscription_count")
+    
+    @property
+    def preferred_locale(self) -> str:
+        """The preferred locale of the Guild. Available options are listed in the `inkcord.Locales` enum."""
+        return self.__data["preferred_locale"]
+    
+    @property
+    def public_updates_channel_id(self) -> ResourceID:
+        """The public update channel ID."""
+        return self.__data.get("public_updates_channel_id")
+    
+    @property
+    def max_video_channel_users(self) -> int | None:
+        """Max video channel users."""
+        return self.__data.get("max_video_channel_users")
+    
+    @property
+    def max_stage_channel_users(self) -> int | None:
+        """Max stage channel users."""
+        return self.__data.get("max_stage_video_channel_users")
+    
+    @property
+    def approx_member_count(self) -> int | None:
+        """Approximate member count of guild. Only returned from certain endpoints."""
+        return self.__data.get("approximate_member_count")
+    
+    @property
+    def approx_presence_count(self) -> int | None:
+        """Approximate presence count of guild. Only returned from certain endpoints."""
+        return self.__data.get("approximate_presence_count")
+    
+    @property
+    def welcome_screen(self) -> WelcomeScreen | None:
+        """The welcome screen for the guild. Can be None."""
+        return WelcomeScreen(self.__data["welcome_screen"]) if self.__data.get("welcome_screen") else None
+    
+    @property
     
