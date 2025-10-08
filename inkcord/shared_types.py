@@ -11,7 +11,7 @@ import enum
 import logging
 
 
-class BitIntents(enum.Enum):
+class BitIntents(enum.IntEnum):
     """The class you should use to edit intents.
     + = add a permission
     - = remove a permission
@@ -38,23 +38,68 @@ class BitIntents(enum.Enum):
     - `GUILD_BAN_ADD/REMOVE`
     """
     GUILD_EXPRESSIONS = 1 << 3
+    """Adding this allows your bot to recieve: (or send) \n
+    - `GUILD_EMOJIS_UPDATE` \n
+    - `GUILD_STICKERS_UPDATE` \n
+    - `GUILD_SOUNDBOARD_CREATE/UPDATE/DELETE` \n
+    - `GUILD_SOUNDBOARD_SOUNDS_UPDATE`"""
     GUILD_INTEGRATIONS = 1 << 4
+    """Adding this allows your bot to recieve: (or send) \n
+    - `GUILD_INTEGRATIONS_UPDATE` \n
+    - `INTEGRATION_CREATE/UPDATE/DELETE`"""
     GUILD_WEBHOOKS = 1 << 5
+    """Adding this allows your bot to recieve/send this event: `WEBHOOKS_UPDATE`"""
     GUILD_INVITES = 1 << 6
+    """Adding this allows your bot to recieve/send these events: \n
+    - `INVITE_CREATE/DELETE`"""
     GUILD_VOICE_STATES = 1 << 7
+    """Adding this allows your bot to recieve/send these events: \n
+    - `VOICE_CHANNEL_EFFECT_SEND` \n
+    - `VOICE_STATE_UPDATE`"""
     GUILD_PRESENCES = 1 << 8
+    """!! PRIVILEGED INTENT !! 
+    \n Adding this allows your bot to recieve/send this event: `PRESENCE_UPDATE`"""
     GUILD_MESSAGES = 1 << 9
+    """Adding this allows your bot to recieve/send these events: \n
+    - `MESSAGE_CREATE/UPDATE/DELETE` \n
+    - `MESSAGE_DELETE_BULK`"""
     GUILD_MESSAGE_REACTIONS = 1 << 10
+    """Adding this allows your bot to recieve/send these events: \n
+  - `MESSAGE_REACTION_ADD/REMOVE` \n
+  - `MESSAGE_REACTION_REMOVE_ALL` \n
+  - `MESSAGE_REACTION_REMOVE_EMOJI`"""
     GUILD_MESSAGE_TYPING = 1 << 11
+    """Adding this allows your bot to recieve/send this event: `TYPING_START`"""
     DIRECT_MESSAGES = 1 << 12
+    """Adding this allows your bot to recieve/send these events: \n
+  - `MESSAGE_CREATE/UPDATE/DELETE`
+  - `CHANNEL_PINS_UPDATE`"""
     DIRECT_MESSAGE_REACTIONS = 1 << 13
+    """Adding this allows your bot to recieve/send these events: \n
+  - `MESSAGE_REACTION_ADD/REMOVE` \n
+  - `MESSAGE_REACTION_REMOVE_ALL` \n
+  - `MESSAGE_REACTION_REMOVE_EMOJI`"""
     DIRECT_MESSAGE_TYPING = 1 << 14
+    """Adding this allows your bot to recieve/send this event: `TYPING_START`"""
     MESSAGE_CONTENT = 1 << 15
+    """!! PRIVILEGED INTENT !! \n
+    This intent has no events associated with it, rather it defines what data is sent to specific fields in specific endpoints.
+    """
     GUILD_SCHEDULED_EVENTS = 1 << 16
+    """Adding this allows your bot to recieve/send these events: \n
+    - `GUILD_SCHEDULED_EVENT_CREATE/UPDATE/DELETE` \n
+    - `GUILD_SCHEDULED_EVENT_USER_ADD/REMOVE`"""
     AUTOMOD_CONFIG = 1 << 20
+    """Adding this allows your bot to recieve/send these events: \n
+    - `AUTO_MODERATION_RULE_CREATE/UPDATE/DELETE`"""
     AUTOMOD_EXEC = 1 << 21
+    """Adding this allows your bot to recieve/send this event: `AUTO_MODERATION_ACTION_EXECUTION`"""
     GUILD_MESSAGE_POLLS = 1 << 24
+    """Adding this allows your bot to recieve/send these events: \n
+    - `MESSAGE_POLL_VOTE_ADD/REMOVE`"""
     DIRECT_MESSAGE_POLLS = 1 << 25
+    """Adding this allows your bot to recieve/send these events: \n
+    - `MESSAGE_POLL_VOTE_ADD/REMOVE`"""
     
     @classmethod
     def all(cls,self): # class method isn't really needed but I want cleaner syntax
@@ -64,7 +109,9 @@ class BitIntents(enum.Enum):
             final += value
         return final
     
-    def 
+    @classmethod
+    def default(cls,self): # returns all privileged intents (that's it)
+        return cls.GUILD_MEMBERS + cls.GUILD_PRESENCES + cls.MESSAGE_CONTENT
 
 class RESUMABLE_CLOSE_CODES(enum.IntEnum):
     UNKNOWN = 4000
