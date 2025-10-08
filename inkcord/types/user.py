@@ -173,7 +173,7 @@ class User:
             id (ResourceID): The ID of the guild to leave.
         
         Returns:
-            nothing
+            None
         """
         bot._CONN.send_request("DELETE",f"users/@me/guilds/{id}",None)
     

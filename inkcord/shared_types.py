@@ -11,13 +11,32 @@ import enum
 import logging
 
 
-class BitIntents(enum.IntFlag):
-    """A less abstracted interface to interact with intents. 
-    Intents can be added using bitwise operations.
-    NOTE: This class is used internally to match with the more abstracted Intents class. Please do not edit this."""
+class BitIntents(enum.Enum):
+    """The class you should use to edit intents.
+    + = add a permission
+    - = remove a permission
+    There are several methods in this class that provide presets for intents."""
     GUILDS = 1 << 0
+    """Adding this allows your bot to recieve: (or send) \n
+    - `GUILD_CREATE/UPDATE/DELETE` \n
+    - `GUILD_ROLE_CREATE/UPDATE/DELETE` \n
+    - `CHANNEL_CREATE/UPDATE/DELETE` \n
+    - `CHANNEL_PINS_UPDATE` \n
+    - `THREAD_CREATE/UPDATE/DELETE` \n
+    - `THREAD_LIST_SYNC` \n
+    - `THREAD_MEMBER_UPDATE` and `THREAD_MEMBERS_UPDATE` \n
+    - `STAGE_INSTANCE_CREATE/UPDATE/DELETE`"""
     GUILD_MEMBERS = 1 << 1
+    """!! PRIVILEGED INTENT !!\n 
+    Adding this allows your bot to recieve: (or send) \n
+    - `GUILD_MEMBER_ADD/UPDATE/REMOVE` \n
+    - `THREAD_MEMBERS_UPDATE`
+    """
     GUILD_MODERATION = 1 << 2
+    """Adding this allows your bot to recieve: (or send) \n
+    - `GUILD_AUDIT_LOG_ENTRY_CREATE` \n
+    - `GUILD_BAN_ADD/REMOVE`
+    """
     GUILD_EXPRESSIONS = 1 << 3
     GUILD_INTEGRATIONS = 1 << 4
     GUILD_WEBHOOKS = 1 << 5
@@ -34,8 +53,18 @@ class BitIntents(enum.IntFlag):
     GUILD_SCHEDULED_EVENTS = 1 << 16
     AUTOMOD_CONFIG = 1 << 20
     AUTOMOD_EXEC = 1 << 21
-    GUILD_MESSAGE_POLLS = 24
-    DIRECT_MESSAGE_POLLS = 25
+    GUILD_MESSAGE_POLLS = 1 << 24
+    DIRECT_MESSAGE_POLLS = 1 << 25
+    
+    @classmethod
+    def all(cls,self): # class method isn't really needed but I want cleaner syntax
+        """Returns intents with ALL options enabled (NOT RECOMMENDED)"""
+        final = 0
+        for value in BitIntents._value2member_map_.keys():
+            final += value
+        return final
+    
+    def 
 
 class RESUMABLE_CLOSE_CODES(enum.IntEnum):
     UNKNOWN = 4000

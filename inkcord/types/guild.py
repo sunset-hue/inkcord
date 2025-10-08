@@ -1,5 +1,6 @@
 import typing
-import datetime
+import json
+from typing import Self
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
@@ -7,6 +8,7 @@ if typing.TYPE_CHECKING:
     from .role import Role
     from .emoji import Emoji
     from ..shared_types import WelcomeScreen, Sticker
+    
 
 class PartialGuild:
     
@@ -271,12 +273,17 @@ class Guild:
 
     
     @classmethod
-    def get_guild(cls,bot,id: ResourceID, with_counts: bool = False):
+    def get_guild(cls,bot,id: ResourceID, with_counts: bool = False) -> Self:
         """Gets a guild, and constructs a `inkcord.Guild` object out of it.
 
         Args:
             bot (inkcord.Client): supposed to be inkcord.Client, not typehinted to prevent circular imports.
             id (inkcord.ResourceID): The id of the guild to retrieve.
             with_counts (bool): Whether to return the fields `approximate_member_count` and `approximate_presence_count` in the resulting guild.
+        Returns:
+            The guild retrieved. (`inkcord.Guild`)
         """
         request = bot._CONN.send_request("GET",f"guilds/{id}",with_counts=with_counts)
+        result = self(json.loads(request.result().read()))
+        return result
+    
