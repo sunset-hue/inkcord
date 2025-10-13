@@ -7,9 +7,8 @@ import re
 import json
 
 if typing.TYPE_CHECKING:
-    from .http_gateway import FormatterThreading
     from .exceptions import HandleableException, GeneralException
-    from .shared_types import TYPEMAPS
+    from .shared_types import TYPEMAPS, FormatterThreading
 
 logger = logging.getLogger("inkcord-slash")
 handler = logging.StreamHandler()
@@ -67,7 +66,7 @@ class InteractionCommand:
                 "description": None, # this is placeholder for rn, too lazy to add parameter specific descriptions
                 "type": TYPEMAPS._member_map_[typedict[sig.parameters[i].annotation]],
                 # so ugly :pensive:
-                "required": sig.parameters[i] is typing.Optional
+                "required": type(sig.parameters[i]) != typing.Optional
                 # choices is gonna be it's own thing later
                 })
         return l

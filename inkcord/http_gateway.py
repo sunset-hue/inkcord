@@ -24,18 +24,11 @@ import random
 import urllib.parse
     
 if typing.TYPE_CHECKING:    
-    from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob
+    from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob, FormatterThreading
     from .thread_owning import GatewayEvent
     from .event_handling import handle_events
     from .listener import EventListener
     from .exceptions import RequestException, GeneralException
-class FormatterThreading(logging.Formatter):
-    def format(self, record):
-        if record.levelno == logging.DEBUG:
-            self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-DEBUG Thread: %(threadName)s] (You are in a testing environment/version of inkcord.) | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
-            # this is just so I have extra info to debug with
-        else:
-            self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
 handler = logging.StreamHandler()
 handler.setFormatter(FormatterThreading("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",datefmt="%A %-I:%-M.%-S"))
 logger.addHandler(handler)
