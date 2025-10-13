@@ -34,6 +34,7 @@ class Client:
         @functools.wraps(func)
         def functiond(**kwargs):
             self.listeners.append(EventListener(func,func.__name__))
+        return functiond
     
     
     def command(self, name: str | None,description: str | None,func: typing.Callable,private: ResourceID | None):
