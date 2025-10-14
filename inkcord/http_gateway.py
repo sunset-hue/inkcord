@@ -11,7 +11,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 
 import http.client as httcl
-import psutil
 import asyncio
 import typing
 import json
@@ -19,16 +18,14 @@ import os
 import logging
 import websockets
 import platform
-import threading
 import random
 import urllib.parse
     
 if typing.TYPE_CHECKING:    
-    from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,ThreadJob, FormatterThreading
-    from .thread_owning import GatewayEvent
-    from .event_handling import handle_events
+    from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,FormatterThreading
     from .listener import EventListener
-    from .exceptions import RequestException, GeneralException
+    from .exceptions import RequestException
+    from .gateway_ev import GatewayEvent
 handler = logging.StreamHandler()
 handler.setFormatter(FormatterThreading("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",datefmt="%A %-I:%-M.%-S"))
 logger.addHandler(handler)
@@ -40,8 +37,8 @@ class Request:
 
 
 class AsyncClient:
-    """This is the basis for http and gateway interactions."""
-    def __init__(self,token: str,intents: int,version: int = 10,gateway: bool = True):
+    """This is the basis for http and gateway interactions. (do not instantiate, this class is already instantiated in inkcord.Client)"""
+    def __init__(self,token: str,intents: BitIntents,version: int = 10,gateway: bool = True):
         self.headers = {
             "User-Agent": "DiscordBot (https://github.com/inkcord,0.1.0a)",
             "Content-Type": "application/json",
@@ -59,14 +56,9 @@ class AsyncClient:
         self.token = token
         self.intents = intents
         self.version = version
-        self.thread_count = psutil.cpu_count()
         self.slash_cmds = []
         self._debug = True if "debug" in os.listdir("..") else False
         self.pending_reqs = []
-        if self.thread_count == 1:
-            raise GeneralException("bro how the HELL do you only have 1 thread is ur computer from the 1990s or something idek how this would happen")
-        # max amount of threads is limited to amt of cores because i saw it on a stack overflow thing
-        # this loop is going to be used by (almost) all other routines so the lib is effectively async
     
     
     @classmethod
@@ -138,29 +130,6 @@ class AsyncClient:
                 await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
                 logger.debug("Heartbeat sent immediately.")
                 
-                
-    
-    async def queue_logic(self,events: websockets.ClientConnection):
-        # manages the amount of threads and what each thread is doing
-        self.threadjobs: list[ThreadJob] = []
-        job = ThreadJob()
-        curr_threads = 0
-        async for message in events:
-            if len(self.threadjobs) == self.thread_count and [threadjob for threadjob in self.threadjobs if threadjob.finished == False] == len(self.threadjobs):
-                logger.warning("All threads are occupied by an event. Priority events will have new threads created for them, while others will have a DELAYED RESPONSE.")
-            srlized = json.loads(message)
-            if self._debug:    
-                logger.debug(f"Initiating event queue and creating a max of {self.thread_count} threads")
-            curr_threads += 1
-            curr_thread = threading.Thread(target=handle_events,args=(self,job,self.loop,self.event_listeners,logger,self.gateway_conn)) # type: ignore
-            job.event = srlized["t"]
-            job.name = curr_thread.name # pyright: ignore[reportAttributeAccessIssue]
-            self.threadjobs.append(job)
-            n = 0
-            for job in self.threadjobs:
-                if job.finished:
-                    self.threadjobs.pop(n)
-                n += 1
         # finally finished im guessing I have no idea
 
     
