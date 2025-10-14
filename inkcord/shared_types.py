@@ -7,6 +7,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+
 import enum
 import logging
 
@@ -16,6 +17,7 @@ class BitIntents(enum.IntEnum):
     + = add a permission
     - = remove a permission
     There are several methods in this class that provide presets for intents."""
+
     GUILDS = 1 << 0
     """Adding this allows your bot to recieve: (or send) \n
     - `GUILD_CREATE/UPDATE/DELETE` \n
@@ -100,18 +102,19 @@ class BitIntents(enum.IntEnum):
     DIRECT_MESSAGE_POLLS = 1 << 25
     """Adding this allows your bot to recieve/send these events: \n
     - `MESSAGE_POLL_VOTE_ADD/REMOVE`"""
-    
+
     @classmethod
-    def all(cls,self): # class method isn't really needed but I want cleaner syntax
+    def all(cls, self):  # class method isn't really needed but I want cleaner syntax
         """Returns intents with ALL options enabled (NOT RECOMMENDED)"""
         final = 0
         for value in BitIntents._value2member_map_.keys():
             final += value
         return final
-    
+
     @classmethod
-    def default(cls,self): # returns all privileged intents (that's it)
+    def default(cls, self):  # returns all privileged intents (that's it)
         return cls.GUILD_MEMBERS + cls.GUILD_PRESENCES + cls.MESSAGE_CONTENT
+
 
 class RESUMABLE_CLOSE_CODES(enum.IntEnum):
     UNKNOWN = 4000
@@ -125,7 +128,9 @@ class RESUMABLE_CLOSE_CODES(enum.IntEnum):
     INVALID_SHARD = 4010
     INVALID_INTENTS = 4013
 
+
 logger = logging.getLogger("inkcord-establish")
+
 
 class ThreadJob:
     def __init__(self):
@@ -148,23 +153,29 @@ class TYPEMAPS(enum.Enum):
 
 
 class AvatarDecoration:
-    def __init__(self,_data):
+    def __init__(self, _data):
         self.sku: int = _data["sku_id"]
-        self.asset = f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"
+        self.asset = (
+            f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"
+        )
+
 
 class WelcomeScreenChannel:
-    def __init__(self,_data):
+    def __init__(self, _data):
         self.channel_id: int = _data["channel_id"]
         self.description: str = _data["description"]
 
 
 class WelcomeScreen:
-    def __init__(self,_data):
+    def __init__(self, _data):
         self.desc = _data["description"]
-        self.welcome_screen_channels = [WelcomeScreenChannel(data) for data in _data["welcome_channels"]]
+        self.welcome_screen_channels = [
+            WelcomeScreenChannel(data) for data in _data["welcome_channels"]
+        ]
+
 
 class Sticker:
-    def __init__(self,_data):
+    def __init__(self, _data):
         self.id: int = _data["id"]
         """ID of sticker"""
         self.pack_id: int | None = _data.get("pack_id")
@@ -181,6 +192,7 @@ class Sticker:
         """The guild where this guild id originated from"""
         self.sort_value: int = _data.get("sort_value")
         """This sticker's sort order within it's standard pack, if applicable"""
+
 
 class FormatterThreading(logging.Formatter):
     def format(self, record):

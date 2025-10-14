@@ -1,7 +1,9 @@
 class Permissions:
     """This object represents the permissions a certain role/channel has.
-    This object can be edited by setting each variable to a bool. Setting it to any number (other than 0) automatically flips that permission to True."""
-    def __init__(self,perms: int | None):
+    This object can be edited by setting each variable to a bool. Setting it to any number (other than 0) automatically flips that permission to True.
+    """
+
+    def __init__(self, perms: int | None):
         """Initializes a Permissions object with all permissions set to False. \n (If there is a permissions integer provided, (not true in most user cases) use the `._convert()` function to apply to fields)"""
         self.perm_num = perms
         self.create_instant_invites = False

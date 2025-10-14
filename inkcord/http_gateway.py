@@ -8,8 +8,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-
-
 import http.client as httcl
 import asyncio
 import typing
@@ -20,17 +18,34 @@ import websockets
 import platform
 import random
 import urllib.parse
-    
-if typing.TYPE_CHECKING:    
-    from .shared_types import BitIntents, RESUMABLE_CLOSE_CODES,logger,FormatterThreading
+
+if typing.TYPE_CHECKING:
+    from .shared_types import (
+        BitIntents,
+        RESUMABLE_CLOSE_CODES,
+        logger,
+        FormatterThreading,
+    )
     from .listener import EventListener
     from .exceptions import RequestException
     from .gateway_ev import GatewayEvent
 handler = logging.StreamHandler()
-handler.setFormatter(FormatterThreading("[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",datefmt="%A %-I:%-M.%-S"))
+handler.setFormatter(
+    FormatterThreading(
+        "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s",
+        datefmt="%A %-I:%-M.%-S",
+    )
+)
 logger.addHandler(handler)
+
+
 class Request:
-    def __init__(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],data: dict,route: str):
+    def __init__(
+        self,
+        method: typing.Literal["POST", "GET", "PUT", "DELETE", "PATCH"],
+        data: dict,
+        route: str,
+    ):
         self.method = method
         self.data = json.dumps(data)
         self.api_route = route
@@ -38,11 +53,14 @@ class Request:
 
 class AsyncClient:
     """This is the basis for http and gateway interactions. (do not instantiate, this class is already instantiated in inkcord.Client)"""
-    def __init__(self,token: str,intents: BitIntents,version: int = 10,gateway: bool = True):
+
+    def __init__(
+        self, token: str, intents: BitIntents, version: int = 10, gateway: bool = True
+    ):
         self.headers = {
             "User-Agent": "DiscordBot (https://github.com/inkcord,0.1.0a)",
             "Content-Type": "application/json",
-            "Authorization": f"Bot {token}"
+            "Authorization": f"Bot {token}",
         }
         self.path: str = f"https://discord.com/api/v{version}/"
         self.http_connection = httcl.HTTPSConnection(host=self.path)
@@ -59,85 +77,138 @@ class AsyncClient:
         self.slash_cmds = []
         self._debug = True if "debug" in os.listdir("..") else False
         self.pending_reqs = []
-    
-    
+
     @classmethod
-    def setup(cls,token: str,intents: int,version: int = 10,gateway: bool = True,event_listners: list[EventListener] | None = None):
-        """ A class method that does the gateway setup.
-        """
-        class_setup = cls(token,intents,version,gateway)
+    def setup(
+        cls,
+        token: str,
+        intents: int,
+        version: int = 10,
+        gateway: bool = True,
+        event_listners: list[EventListener] | None = None,
+    ):
+        """A class method that does the gateway setup."""
+        class_setup = cls(token, intents, version, gateway)
         class_setup.get_gateway_url()
-        class_setup.event_listeners = event_listners #pyright: ignore
+        class_setup.event_listeners = event_listners  # pyright: ignore
         return class_setup
-    
-    
+
     def send_multiple_requests(self, *requests: Request):
         """Lowest level interface in this library to send and recieve the result of multiple requests."""
         futures: list[asyncio.Future] = []
         for request in requests:
-            self.loop.run_in_executor(None,self.http_connection.request,request.method,f"{self.path}{request.api_route}",request.data,self.headers)
+            self.loop.run_in_executor(
+                None,
+                self.http_connection.request,
+                request.method,
+                f"{self.path}{request.api_route}",
+                request.data,
+                self.headers,
+            )
             # this also needs to run in an executor so it's also multithreaded and isn't blocking
-            current_future = self.loop.run_in_executor(None,self.http_connection.getresponse)
+            current_future = self.loop.run_in_executor(
+                None, self.http_connection.getresponse
+            )
             futures.append(current_future)
             # absolutely no idea if the *args argument is for the func or not
         return futures
-    
-    def send_request(self,method: typing.Literal['POST','GET','PUT','DELETE','PATCH'],route: str,data: dict | None,**params):
+
+    def send_request(
+        self,
+        method: typing.Literal["POST", "GET", "PUT", "DELETE", "PATCH"],
+        route: str,
+        data: dict | None,
+        **params,
+    ):
         """Lowest level interface in this library to send and recieve the result of a request"""
         if method == "GET" or method == "DELETE":
-            self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}{urllib.parse.urlencode(params)}",None,self.headers)
+            self.loop.run_in_executor(
+                None,
+                self.http_connection.request,
+                method,
+                f"{self.path}{route}{urllib.parse.urlencode(params)}",
+                None,
+                self.headers,
+            )
         else:
-            request_to_check = self.loop.run_in_executor(None,self.http_connection.request,method,f"{self.path}{route}",data)
-            result_to_check = self.loop.run_in_executor(None,self.http_connection.getresponse) # we can ensure there's only one of these
+            request_to_check = self.loop.run_in_executor(
+                None, self.http_connection.request, method, f"{self.path}{route}", data
+            )
+            result_to_check = self.loop.run_in_executor(
+                None, self.http_connection.getresponse
+            )  # we can ensure there's only one of these
             jsonified = json.loads(result_to_check.result().read())
-            self.requests_left = result_to_check.result().headers.getallmatchingheaders("X-Ratelimit-Remaining")[0]
+            self.requests_left = result_to_check.result().headers.getallmatchingheaders(
+                "X-Ratelimit-Remaining"
+            )[0]
             if result_to_check.result().getcode() == 429:
-                logger.warning("Reached ratelimit, checking fields for when to send again.")
-                logger.warning(f"Sending pending request(s) in {jsonified["retry_after"]}s.")
+                logger.warning(
+                    "Reached ratelimit, checking fields for when to send again."
+                )
+                logger.warning(
+                    f"Sending pending request(s) in {jsonified["retry_after"]}s."
+                )
                 self.retry_after = jsonified["retry_after"]
-                self.pending_reqs.append([method,data,route])
-                self.loop.run_in_executor(None,self.handle_http_ratelimit)    
+                self.pending_reqs.append([method, data, route])
+                self.loop.run_in_executor(None, self.handle_http_ratelimit)
             if result_to_check.result().getcode() >= 400:
-                raise RequestException("send_request(): Raised RequestException due to response code being above (or equal to) 400, indicating an error. Check authentication or to make sure that the request body is not malformed.")
+                raise RequestException(
+                    "send_request(): Raised RequestException due to response code being above (or equal to) 400, indicating an error. Check authentication or to make sure that the request body is not malformed."
+                )
             if int(self.requests_left.split(":")[1]) < 5:
-                logger.warning("!!! Bot may hit ratelimit soon, remaining requests less than 5. !!! Please remove any unnecessary API calls if you want to prevent this from happening.")
+                logger.warning(
+                    "!!! Bot may hit ratelimit soon, remaining requests less than 5. !!! Please remove any unnecessary API calls if you want to prevent this from happening."
+                )
             else:
-                return result_to_check 
-    
+                return result_to_check
+
     def get_gateway_url(self):
-        url = self.send_request('GET',"gateway",None)
+        url = self.send_request("GET", "gateway", None)
         url_response = url.result()  # pyright: ignore[reportOptionalMemberAccess]
-        url_unwrap: dict[str,str] = json.loads(url_response.msg.as_string())
+        url_unwrap: dict[str, str] = json.loads(url_response.msg.as_string())
         self.gate_url: str | None = url_unwrap["url"]
-    
-    async def send_heartbeat(self,serialized_data: dict,gateway: websockets.ClientConnection):
-            if serialized_data["op"] == 11:
-                await asyncio.sleep(self.interval / 1000)
-                await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
-                logger.debug("Heartbeat sent.")
-            # this is temporary, to make sure it's sending the heartbeats correctly
-            elif serialized_data["op"] == 1:
-                await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
-                logger.debug("Heartbeat sent immediately.")
-    
-    async def send_heartbeat_forever(self,gateway: websockets.ClientConnection):
+
+    async def send_heartbeat(
+        self, serialized_data: dict, gateway: websockets.ClientConnection
+    ):
+        if serialized_data["op"] == 11:
+            await asyncio.sleep(self.interval / 1000)
+            await gateway.send(
+                json.dumps({"op": 1, "d": self.s if self.s > 0 else None})
+            )
+            logger.debug("Heartbeat sent.")
+        # this is temporary, to make sure it's sending the heartbeats correctly
+        elif serialized_data["op"] == 1:
+            await gateway.send(
+                json.dumps({"op": 1, "d": self.s if self.s > 0 else None})
+            )
+            logger.debug("Heartbeat sent immediately.")
+
+    async def send_heartbeat_forever(self, gateway: websockets.ClientConnection):
         while True:
-            a = await asyncio.sleep(self.interval / 1000) if self.current_event["op"] != 1 else None # effectively makes sure it doesn't wait if the op is 1 (this might seem chatgpt like but I just need clarification for myself ok T_T)
+            a = (
+                await asyncio.sleep(self.interval / 1000)
+                if self.current_event["op"] != 1
+                else None
+            )  # effectively makes sure it doesn't wait if the op is 1 (this might seem chatgpt like but I just need clarification for myself ok T_T)
             if self.current_event["op"] == 11:
-                await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
+                await gateway.send(
+                    json.dumps({"op": 1, "d": self.s if self.s > 0 else None})
+                )
                 logger.debug("Heartbeat sent.")
             if self.current_event["op"] == 1:
-                await gateway.send(json.dumps({ "op": 1,"d": self.s if self.s > 0 else None }))
+                await gateway.send(
+                    json.dumps({"op": 1, "d": self.s if self.s > 0 else None})
+                )
                 logger.debug("Heartbeat sent immediately.")
-                
+
         # finally finished im guessing I have no idea
 
-    
-    
-    
     async def establish_handshake(self):
-        logger.info("Handshake routine was successfully called. Initiating handshake...")
-        gateway = await websockets.connect(self.gate_url) # type: ignore
+        logger.info(
+            "Handshake routine was successfully called. Initiating handshake..."
+        )
+        gateway = await websockets.connect(self.gate_url)  # type: ignore
         self.gateway_conn = gateway
         event_queue = []
         async for message in gateway:
@@ -147,32 +218,45 @@ class AsyncClient:
                 logger.debug(message)
             try:
                 if serialized_data["op"] == 10:
-                    self.jitter = random.uniform(0,1)
-                    self.interval = serialized_data["d"]["heartbeat_interval"] * self.jitter
+                    self.jitter = random.uniform(0, 1)
+                    self.interval = (
+                        serialized_data["d"]["heartbeat_interval"] * self.jitter
+                    )
                 logger.info(f"Sending first heartbeat with a jitter of {self.jitter}")
-                await self.send_heartbeat(serialized_data,gateway)
+                await self.send_heartbeat(serialized_data, gateway)
                 logger.info(f"Initiated heartbeat at {self.interval}ms.")
                 self.interval = serialized_data["d"]["heartbeat_interval"]
                 self.loop.run_forever()
-                self.loop.create_task(self.send_heartbeat_forever(self.gateway_conn)) # this should work, hopefully it doesn't block
+                self.loop.create_task(
+                    self.send_heartbeat_forever(self.gateway_conn)
+                )  # this should work, hopefully it doesn't block
                 # to reset back to normal heartbeat time
-                    # this shouldn't need a while true loop since it checks whether event recieved is a heartbeat or not
-                await gateway.send(message=json.dumps({
-                        "op": 2,
-                        "d": {
-                            "token": self.token,
-                            "properties": {
-                                "os": platform.platform(),
-                                "browser": "inkcord",
-                                "device": "inkcord"
+                # this shouldn't need a while true loop since it checks whether event recieved is a heartbeat or not
+                await gateway.send(
+                    message=json.dumps(
+                        {
+                            "op": 2,
+                            "d": {
+                                "token": self.token,
+                                "properties": {
+                                    "os": platform.platform(),
+                                    "browser": "inkcord",
+                                    "device": "inkcord",
+                                },
+                                "compress": False,
+                                "intents": self.intents,
                             },
-                            "compress": False,
-                            "intents": self.intents
                         }
-                    }))
+                    )
+                )
                 logger.info("Sent IDENTIFY packet. Waiting for response...")
-                if serialized_data["op"] == 0 and serialized_data['d'].get('v') == self.version:
-                    logger.info(f"Successfully connected to discord gateway with session id: {serialized_data["d"]["session_id"]}")
+                if (
+                    serialized_data["op"] == 0
+                    and serialized_data["d"].get("v") == self.version
+                ):
+                    logger.info(
+                        f"Successfully connected to discord gateway with session id: {serialized_data["d"]["session_id"]}"
+                    )
                     self.session_id = serialized_data["d"]["session_id"]
                     self.resume_url = serialized_data["d"]["resume_gateway_url"]
                     self.app_id = serialized_data["d"]["application"]["id"]
@@ -182,22 +266,30 @@ class AsyncClient:
                     serialized_data["op"],
                     serialized_data["d"],
                     serialized_data["s"],
-                    serialized_data["t"]
+                    serialized_data["t"],
                 )
                 logger.info("Gateway handshake is finished. Setting up queue...")
-                
-            except (websockets.exceptions.WebSocketException,websockets.ConnectionClosed) as e:
-                if isinstance(e,websockets.exceptions.WebSocketException):
-                    logger.error(f"Encountered an exception when initiating handshake. (starting reconnect...) Error: {e.args}")
-                if isinstance(e,websockets.ConnectionClosed):
-                    logger.warning(f"Gateway connection was closed with code {e.code}. Running reconnection routine to check whether code is resumable...")
+
+            except (
+                websockets.exceptions.WebSocketException,
+                websockets.ConnectionClosed,
+            ) as e:
+                if isinstance(e, websockets.exceptions.WebSocketException):
+                    logger.error(
+                        f"Encountered an exception when initiating handshake. (starting reconnect...) Error: {e.args}"
+                    )
+                if isinstance(e, websockets.ConnectionClosed):
+                    logger.warning(
+                        f"Gateway connection was closed with code {e.code}. Running reconnection routine to check whether code is resumable..."
+                    )
                     await self.reconnect(e.code)
-                
-            
-    async def reconnect(self,close_code: int):
+
+    async def reconnect(self, close_code: int):
         self.num_reconnects += 1
         if self.num_reconnects == 3:
-            logger.fatal(f"Tried to reconnect 3 times, failed all of them. Please report this error to the devs by creating an issue with tag `bug-report` at this link: \n https://github.com/sunset-hue/inkcord/issues")    
+            logger.fatal(
+                f"Tried to reconnect 3 times, failed all of them. Please report this error to the devs by creating an issue with tag `bug-report` at this link: \n https://github.com/sunset-hue/inkcord/issues"
+            )
         gateway = await websockets.connect(self.resume_url)
         async for data in gateway:
             serialized = json.loads(data)
@@ -210,8 +302,8 @@ class AsyncClient:
                     "d": {
                         "token": self.token,
                         "session_id": self.session_id,
-                        "seq": self.s
-                    }
+                        "seq": self.s,
+                    },
                 }
                 await gateway.send(json.dumps(message))
             if serialized["op"] == 0 and serialized["t"] == "RESUMED":
@@ -219,10 +311,9 @@ class AsyncClient:
             if serialized["op"] == 9 and serialized["d"] == False:
                 logger.error("Invalid session. Reverting to handshake")
                 await self.establish_handshake()
-            
-    
+
     async def handle_http_ratelimit(self):
         await asyncio.sleep(self.retry_after)
-        for method,data,route in self.pending_reqs:
-            self.send_request(method,route,data)
+        for method, data, route in self.pending_reqs:
+            self.send_request(method, route, data)
             logger.info("Sending missed request....")
