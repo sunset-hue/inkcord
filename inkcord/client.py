@@ -17,7 +17,16 @@ class HttpClient:
 
 
 class Client:
-    "A class that uses http and websocket interactions."
+    """A class that uses http and websocket interactions. This class should be instantiated if you want your bot to run with the commands you attached to it. \n
+    Example:
+    ```
+
+    bot = Client(intents,token)
+
+    # - rest of your bot's code here - #
+
+    ```
+    """
 
     def __init__(self, intents: BitIntents, token: str, version: int = 10):
         self.intents = intents
@@ -49,7 +58,8 @@ class Client:
         private: ResourceID | None,
     ):
         """A decorator for making slash commands.
-        The decorated function should take the bot (if in a seperate file, else ignore this instruction),
+        The decorated function should take the bot (if in a seperate file, else ignore this instruction) and the `inkcord.SlashInteraction`.
+        Any extra arguments taken in the decorated function will be filled in/synced to the discord API.
 
         Args:
             name (str | None): The name of the command.
@@ -77,7 +87,10 @@ class Client:
 
     async def sync(self):
         """
-        Syncs all commands attached to this bot.
+        Syncs all commands attached to this bot. This is what makes your bot's slash commands show up on the discord apps menu.\n
+        -coro- \n
+        This function takes no arguments, and shouldn't be ran excessively, since you can and will hit ratelimits if used unnecessarily. \n
+        This function is recommended to be used in special setup functions, which can be made using the `.prereq` decorator.
 
         """
         connection = self._CONN.setup(self.token, self.intents, self.version, True, self.listeners)  # type: ignore
