@@ -19,7 +19,7 @@ class HttpClient:
 class Client:
     """A class that uses http and websocket interactions. This class should be instantiated if you want your bot to run with the commands you attached to it. \n
     Example:
-    ```
+    ```python
 
     bot = Client(intents,token)
 

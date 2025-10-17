@@ -326,5 +326,7 @@ class Guild:
             The guild retrieved. (`inkcord.Guild`)
         """
         request = bot._CONN.send_request("GET", f"guilds/{id}", with_counts=with_counts)
-        result = self(json.loads(request.result().read()))
+        result = self(
+            json.loads(request.result().read())
+        )  # pyright: ignore[reportUndefinedVariable]
         return result

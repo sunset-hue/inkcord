@@ -28,7 +28,6 @@ if typing.TYPE_CHECKING:
     )
     from .listener import EventListener
     from .exceptions import RequestException
-    from .gateway_ev import GatewayEvent
 handler = logging.StreamHandler()
 handler.setFormatter(
     FormatterThreading(
@@ -230,8 +229,6 @@ class AsyncClient:
                 self.loop.create_task(
                     self.send_heartbeat_forever(self.gateway_conn)
                 )  # this should work, hopefully it doesn't block
-                # to reset back to normal heartbeat time
-                # this shouldn't need a while true loop since it checks whether event recieved is a heartbeat or not
                 await gateway.send(
                     message=json.dumps(
                         {
@@ -260,15 +257,9 @@ class AsyncClient:
                     self.session_id = serialized_data["d"]["session_id"]
                     self.resume_url = serialized_data["d"]["resume_gateway_url"]
                     self.app_id = serialized_data["d"]["application"]["id"]
-                # from here on, the queue stuff is about to start
-                event_queue.append(message)
-                thread_event = GatewayEvent(
-                    serialized_data["op"],
-                    serialized_data["d"],
-                    serialized_data["s"],
-                    serialized_data["t"],
+                logger.info(
+                    "Gateway handshake is finished. Initiating normal operation."
                 )
-                logger.info("Gateway handshake is finished. Setting up queue...")
 
             except (
                 websockets.exceptions.WebSocketException,
