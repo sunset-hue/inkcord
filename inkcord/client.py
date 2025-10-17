@@ -37,7 +37,7 @@ class Client:
             token, intents, version=10, gateway=True, event_listners=self.listeners
         )
         self.version = version
-        """Please don't touch this it'll break your bot"""
+        self.prereqs = []
 
         # this is the read only part that i described earlier
 
@@ -110,3 +110,14 @@ class Client:
                         # this is pretty redundant but i'm too lazy to change the _jsonify func
                     else:
                         connection.send_request("POST", f"applications/{self._CONN.app_id}/guilds/{cmd.private}/commands", json.loads(cmd._jsonify()))  # type: ignore
+
+    def prereq(self, func):
+        """This is a decorator to mark a function to be ran during the gateway handshake. The decorated function must not take any arguments.
+        This is particularly useful when your bot needs prerequisite setup like syncing slash commands (see documentation on when to sync and when not to)
+        """
+
+        @functools.wraps(func)
+        def add_to_prereq_list():
+            self.prereqs.append(func)
+
+        return add_to_prereq_list

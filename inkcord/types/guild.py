@@ -328,5 +328,5 @@ class Guild:
         request = bot._CONN.send_request("GET", f"guilds/{id}", with_counts=with_counts)
         result = self(
             json.loads(request.result().read())
-        )  # pyright: ignore[reportUndefinedVariable]
+        )  # shut up python this is fine
         return result

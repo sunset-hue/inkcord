@@ -81,7 +81,7 @@ class AsyncClient:
     def setup(
         cls,
         token: str,
-        intents: int,
+        intents: BitIntents,
         version: int = 10,
         gateway: bool = True,
         event_listners: list[EventListener] | None = None,
