@@ -31,3 +31,31 @@ class Permissions:
         """This permission allows you or another user to view this channel in their guild channel menu, along with viewing messages or joining voice channels. Applies to all channel types (Text, Voice, Stage)"""
         self.send_messages = False
         """This permission allows you or another user to send a message in this channel."""
+        self.send_tts = False
+        """This permission allows you or another user to use TTS (text to speech) in this channel."""
+        self.manage_messages = False
+        """This permission allows you or another user to delete other users' messages in this channel."""
+        self.embed_links = False
+        """This permission, if enabled, allows you or another user's links to be auto-embedded."""
+        self.attach_files = False
+        """This permission allows you or another user to attach a file to a message/send files by themselves."""
+        self.message_history = False
+        """This permission allows you or another user to read the channel's message history."""
+        self.mention_everyone = False
+        """This permission allows you or another user to mention everyone in a channel."""
+        self.use_external_emojis = False
+        """This permission allows nitro users to send external emojis in a channel."""
+        self.view_guild_insights = False
+        """This permission allows you or another user to view guild insights."""
+        self.connect = False
+        """This permission allows you or another user to join a voice channel."""
+        self.speak = False
+        """This permission allows you or another user to speak in a voice channel."""
+        self.mute_members = False
+        """This permission allows you or another user in a voice/stage channel."""
+        self.deafen_members = False
+        """This permission allows you or another user to deafen members in a voice channel."""
+        self.move_members = False
+        """This permission allows you or another user to move members between voice/stage channels."""
+        self.use_vad = False
+        """This permission allows you or another user to enable VAD (Voice Activity Detection) in a voice channel."""
