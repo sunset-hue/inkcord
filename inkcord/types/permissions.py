@@ -59,3 +59,29 @@ class Permissions:
         """This permission allows you or another user to move members between voice/stage channels."""
         self.use_vad = False
         """This permission allows you or another user to enable VAD (Voice Activity Detection) in a voice channel."""
+        self.change_nickname = False
+        """This permission allows you or another user to change their own nickname."""
+        self.manage_nicknames = False
+        """This permission allows you or another user to change other people's nicknames."""
+        self.manage_roles = False
+        """This permission allows you or another user to change guild roles."""
+        self.manage_webhooks = False
+        """This permission allows you or another user to change webhooks."""
+        self.guild_expressions = False
+        """This permission allows you or another user to edit emojis, stickers, and soundboard sounds for all users in a guild."""
+        self.use_app_commands = False
+        """This permission allows you or another user to use application commands in a channel. Applies to all types of channels."""
+        self.request_to_speak = False
+        """This permission allows you or another user to request to speak in a Stage channel. \n
+        ### UNDER ACTIVE DEVELOPMENT FROM API CONTRIBUTORS, SUBJECT TO CHANGE"""
+        self.manage_events = False
+        """This permission allows you or another user to manage events in a guild channel. Applies to Voice and Stage channels."""
+        self.manage_threads = False
+        """This permission allows you or another user to manage threads in a text channel."""
+        self.public_threads = False
+        """This permission allows you or another user to create a public thread."""
+        self.private_threads = False
+        """This permission allows you or another user to create a private thread."""
+        self.external_stickers = False
+        """This permission allows nitro users to send external stickers in a channel."""
+        
