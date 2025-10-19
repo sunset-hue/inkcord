@@ -84,4 +84,25 @@ class Permissions:
         """This permission allows you or another user to create a private thread."""
         self.external_stickers = False
         """This permission allows nitro users to send external stickers in a channel."""
-        
+        self.send_messages_threads = False
+        """This permission allows you or another user to send a message in a thread."""
+        self.use_embedded_activities = False
+        """This permission allows you or another user to use an Activity (applications with the `EMBEDDED` flag enabled (use `inkcord.Client.enable()`))"""
+        self.moderate_members = False
+        """This permission allows you or another user to time out users in a channel."""
+        self.soundboard = False
+        """This permission allows you to use soundboard sounds in a voice channel."""
+        self.create_guild_expressions = None
+        """This permission is not available for developers yet (see discord api docs)"""
+        self.create_events = None
+        """Not available to developers yet."""
+        self.external_sounds = False
+        """Allows you or another user to use sounds from another server."""
+        self.voice_messages = False
+        """Allows you or another user to send voice messages."""
+        self.send_polls = False
+        """Allows you or another user to send poll messages in a text channel."""
+        self.external_apps = False
+        """Allows you or another user to use apps from their own authenticated app list (user installed bots)"""
+        self.pin_messages = False
+        """Allows you or another user to pin a message in a text channel."""
