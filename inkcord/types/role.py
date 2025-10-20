@@ -1,4 +1,5 @@
 from ..resourceid import ResourceID
+from .permissions import Permissions
 
 
 class Role:

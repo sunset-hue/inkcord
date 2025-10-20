@@ -1,3 +1,4 @@
+from typing import Callable
 class Permissions:
     """This object represents the permissions a certain role/channel has.
     This object can be edited by setting each variable to a bool. Setting it to any number (other than 0) automatically flips that permission to True.
@@ -106,3 +107,11 @@ class Permissions:
         """Allows you or another user to use apps from their own authenticated app list (user installed bots)"""
         self.pin_messages = False
         """Allows you or another user to pin a message in a text channel."""
+
+    def _permissionize(self):
+        n = 0
+        for i, v in self.__dict__:
+            if isinstance(v,Callable):
+                continue
+            else:
+                if self.perm_num >> n 
