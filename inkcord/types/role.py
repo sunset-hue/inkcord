@@ -56,7 +56,8 @@ class Role:
     @property
     def permissions(self):
         """Placeholder"""
-        pass
+        perm = Permissions(self.__data["permissions"])
+        return perm._permissionize()
 
     @property
     def managed(self) -> bool:

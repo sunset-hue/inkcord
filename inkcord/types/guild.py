@@ -317,6 +317,7 @@ class Guild:
     @classmethod
     def get_guild(cls, bot, id: ResourceID, with_counts: bool = False) -> Self:
         """Gets a guild, and constructs a `inkcord.Guild` object out of it.
+        `with_counts` just determines whether to return a member count/presence count in a guild.
 
         Args:
             bot (inkcord.Client): supposed to be inkcord.Client, not typehinted to prevent circular imports.

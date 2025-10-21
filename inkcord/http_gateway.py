@@ -68,6 +68,7 @@ class AsyncClient:
         self.gateway = gateway
         self.gate_url: str | None = None
         self.num_reconnects: int = 0
+        self.event_listeners: list[EventListener] = []
         self.s: int = 0
         self.interval = 0
         self.token = token
@@ -260,6 +261,11 @@ class AsyncClient:
                 logger.info(
                     "Gateway handshake is finished. Initiating normal operation."
                 )
+                for i in self.event_listeners:
+                    if i.event_name == self.current_event["t"]:
+                        await asyncio.create_task(
+                            coro=i.func  # pyright: ignore[reportArgumentType]
+                        )
 
             except (
                 websockets.exceptions.WebSocketException,

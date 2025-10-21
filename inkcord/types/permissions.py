@@ -1,11 +1,13 @@
 from typing import Callable
+
+
 class Permissions:
     """This object represents the permissions a certain role/channel has.
     This object can be edited by setting each variable to a bool. Setting it to any number (other than 0) automatically flips that permission to True.
     """
 
     def __init__(self, perms: int | None):
-        """Initializes a Permissions object with all permissions set to False. \n (If there is a permissions integer provided, (not true in most user cases) use the `._convert()` function to apply to fields)"""
+        """Initializes a Permissions object with all permissions set to False. \n (If there is a permissions integer provided, (not true in most user cases) use the `._permissionize()` function to apply to fields)"""
         self.perm_num = perms
         self.create_instant_invites = False
         """This permission allows you to create invites for your guild. Applies to Text, Voice, and Stage channels."""
@@ -111,7 +113,9 @@ class Permissions:
     def _permissionize(self):
         n = 0
         for i, v in self.__dict__:
-            if isinstance(v,Callable):
+            if isinstance(v, Callable):
                 continue
             else:
-                if self.perm_num >> n 
+                if self.perm_num & 1 << n == 1 << n:  # type: ignore
+                    setattr(self, i, True)
+        return self
