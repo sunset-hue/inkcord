@@ -192,7 +192,7 @@ class User:
         """
         request = bot._CONN.send_request("GET", f"users/@me/guilds/{id}/member", None)
         result = GuildMember(json.loads(request.result().read()))
-        result.user = self
+        result.user = self  # pyright: ignore[reportAttributeAccessIssue]
         return result
 
     def leave_guild(self, bot, id: ResourceID):

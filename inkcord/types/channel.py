@@ -2,6 +2,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
+    from .permissions import PermissionOverwrite
 
 
 class Channel:
@@ -21,6 +22,23 @@ class Channel:
         """The ID of the guild that has this channel in it, if applicable."""
         return (
             ResourceID(self._data["guild_id"]) if self._data.get("guild_id") else None
+        )
+
+    @property
+    def position(self) -> int | None:
+        """The position of this channel in the guild."""
+        return self._data["position"] if self._data.get("position") else None
+
+    @property
+    def overwrites(self) -> list[PermissionOverwrite] | None:
+        """The overwrites that are exclusive to this specific channel."""
+        return (
+            [
+                PermissionOverwrite(overwrite)
+                for overwrite in self._data["permission_overwrites"]
+            ]
+            if self._data.get("permission_overwrites")
+            else None
         )
 
 

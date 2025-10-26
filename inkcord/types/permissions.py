@@ -1,4 +1,8 @@
+import typing
 from typing import Callable
+
+if typing.TYPE_CHECKING:
+    from ..resourceid import ResourceID
 
 
 class Permissions:
@@ -6,9 +10,9 @@ class Permissions:
     This object can be edited by setting each variable to a bool. Setting it to any number (other than 0) automatically flips that permission to True.
     """
 
-    def __init__(self, perms: int | None):
+    def __init__(self, perms: str | None):
         """Initializes a Permissions object with all permissions set to False. \n (If there is a permissions integer provided, (not true in most user cases) use the `._permissionize()` function to apply to fields)"""
-        self.perm_num = perms
+        self.perm_num = int(perms)
         self.create_instant_invites = False
         """This permission allows you to create invites for your guild. Applies to Text, Voice, and Stage channels."""
         self.kick_members = False
@@ -119,3 +123,13 @@ class Permissions:
                 if self.perm_num & 1 << n == 1 << n:  # type: ignore
                     setattr(self, i, True)
         return self
+
+
+class PermissionOverwrite:
+    """Shows an overwritten permission that's exclusive to this channel/resource specifically."""
+
+    def __init__(self, _dict: dict):
+        self.applicable_id = ResourceID(_dict["id"])
+        """The role/user that this overwrite applies to's ID."""
+        self.allow = _dict["allow"]
+        self.deny = _dict["deny"]

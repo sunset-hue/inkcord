@@ -5,6 +5,7 @@ import datetime
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from ..shared_types import AvatarDecoration
+    from .permissions import Permissions
 
 
 class GuildMember:
@@ -67,9 +68,9 @@ class GuildMember:
         return self.__data.get("pending")
 
     @property
-    def permissions(self) -> None:
-        """Placeholder until permission system is ready..."""
-        pass
+    def permissions(self) -> Permissions:
+        """Permissions for this member."""
+        return Permissions(self.__data["permissions"])._permissionize()
 
     @property
     def communication_disabled_until(self) -> datetime.datetime | None:
