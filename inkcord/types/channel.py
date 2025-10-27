@@ -3,6 +3,7 @@ import typing
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from .permissions import PermissionOverwrite
+    from .user import User
 
 
 class Channel:
@@ -41,11 +42,47 @@ class Channel:
             else None
         )
 
+    @property
+    def name(self) -> str | None:
+        """The name of this channel. May be None."""
+        return self._data["name"] if self._data.get("name") else None
+
+    @property
+    def topic(self) -> str | None:
+        """The channel topic. Can be 4096 characters max on Forum and Media channels, and 1024 for all other channels. May be None."""
+        return self._data["topic"] if self._data.get("topic") else None
+
+    @property
+    def last_message_id(self) -> ResourceID | None:
+        """The most recent message in this channel's ID. May be None, if in a non text channel."""
+        return (
+            ResourceID(self._data["last_message_id"])
+            if self._data.get("last_message_id")
+            else None
+        )
+
+    @property
+    def slowmode(self) -> int | None:
+        """The amount of seconds a user/bot has to wait before sending another message. May be None."""
+        return self._data.get("rate_limit_per_user")
+
 
 class DMChannel(Channel):
     """An object that represents a channel in the context of a DM. Inherits from `inkcord.Channel`."""
 
     def __init__(self, data: dict):
         super().__init__(data)
-        self.recipients = None
+        self.recipients: "User | None" = None
+        # forward reference so I can typehint it without creating a circular import
         """The recipients of this Group DM, if applicable."""
+
+
+class VoiceChannel(Channel):
+    """An object that represents a channel in the context of a call, or a voice channel in a Guild. Inherits from `inkcord.Channel`."""
+
+    def __init__(self, data: dict):
+        super().__init__(data)
+        self.bitrate: int = data["bitrate"]
+        """The bitrate of this voice channel (in bits)"""
+        self.user_limit: int = data["user_limit"]
+        """The number of users that can be in this voice channel at once."""
