@@ -1,4 +1,5 @@
 import typing
+import datetime
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
@@ -66,15 +67,56 @@ class Channel:
         """The amount of seconds a user/bot has to wait before sending another message. May be None."""
         return self._data.get("rate_limit_per_user")
 
+    @property
+    def parent_id(self) -> ResourceID | None:
+        """The id of the parent category for a Text Channel, for threads, the id of the text channel this thread was created."""
+        return (
+            ResourceID(self._data["parent_id"]) if self._data.get("parent_id") else None
+        )
+
+    @property
+    def last_pin_timestamp(self) -> datetime.datetime | None:
+        """A `datetime.datetime` object representing when the last pinned message in this channel was pinned."""
+        return (
+            datetime.datetime.fromisoformat(self._data["last_pin_timestamp"])
+            if self._data.get("last_pin_timestamp")
+            else None
+        )
+
+    @property
+    def message_count(self) -> int | None:
+        """The number of messages in this thread."""
+        return self._data.get("message_count")
+
+    @property
+    def member_count(self) -> int | None:
+        """The number of unique members in this thread, automatically stops counting at 50."""
+        return self._data.get("member_count")
+
 
 class DMChannel(Channel):
     """An object that represents a channel in the context of a DM. Inherits from `inkcord.Channel`."""
 
     def __init__(self, data: dict):
         super().__init__(data)
-        self.recipients: "User | None" = None
-        # forward reference so I can typehint it without creating a circular import
+        self.recipients: "list[User] | User | None" = None
         """The recipients of this Group DM, if applicable."""
+        self.icon: str | None = (
+            f"https://cdn.discordapp.com/{data["icon"]}.png"
+            if data.get("icon")
+            else None
+        )
+        """The icon hash of this Group DM, if applicable."""
+        self.owner_id = ResourceID(data["owner_id"]) if data.get("owner_id") else None
+        """The id of the owner of the Group DM, if applicable."""
+        self.application_id = (
+            ResourceID(data["application_id"]) if data.get("application_id") else None
+        )
+        """The id of the app that made this DM, if applicable."""
+        self.managed: bool = (
+            data["managed"] if data.get("managed") else None
+        )  # pyright: ignore[reportAttributeAccessIssue]
+        """Whether this Group DM is managed by an application, if applicable."""
 
 
 class VoiceChannel(Channel):
@@ -86,3 +128,9 @@ class VoiceChannel(Channel):
         """The bitrate of this voice channel (in bits)"""
         self.user_limit: int = data["user_limit"]
         """The number of users that can be in this voice channel at once."""
+        self.rtc_region = (
+            ResourceID(data["rtc_region"]) if data.get("rtc_region") else None
+        )
+        """The voice region ID for the voice channel. May be None."""
+        self.video_quality_mode: int = self._data["video_quality_mode"]
+        """The video quality mode for this channel. 0 means it's automatically chosen to protect performance, and 1 means 720p."""
