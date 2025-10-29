@@ -27,3 +27,7 @@ classifiers = [
 ]
 [project.urls]
 Homepage = "https://github.com/sunset-hue/inkcord"
+
+
+[tool.setuptools.dynamic]
+version = {attr = "inkcord.util.__version__"}
