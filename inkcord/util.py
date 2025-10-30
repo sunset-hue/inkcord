@@ -1,19 +1,21 @@
 """Helper functions for internal and external purposes."""
 
+
 # don't modify __version__ it's automatically supplied by the set_semver function
-
-
 def _set_semver(
-    breaking: int | None,
-    non_breaking: int | None,
-    minor: int | None,
-    specifier: int | None,
+    breaking: tuple[int, int],
+    non_breaking: tuple[int, int],
+    minor: tuple[int, int],
 ):
-    version = ""
-    if all([breaking is None, non_breaking is None, minor is None]):
-        raise ValueError(
-            f"_set_semver(): reported failure due to all supplied arguments being None. version is unchanged and stays at {__version__}"
-        )
+    """
+    Formats a semver version compatible with the semver specifications.
+    The arguments are tuples just to specify order, they stay at the order 0,1,2 for all arguments respectively.
+    """
+    version = __version__.split(".")
+    for i in [breaking, non_breaking, minor]:
+        version[i[1]] = str(i[0])
+
+    return "".join(version)
 
 
-__version__ = _set_semver()
+__version__: str = _set_semver((0, 0), (1, 1), (0, 2))
