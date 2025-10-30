@@ -18,4 +18,4 @@ def _set_semver(
     return "".join(version)
 
 
-__version__: str = _set_semver((0, 0), (1, 1), (0, 2))
+__version__: str = "0.0.0"

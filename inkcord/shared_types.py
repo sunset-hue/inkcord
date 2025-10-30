@@ -6,10 +6,14 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+This file holds small class definitions that will clog up the main file they take reference from, so they're put here.
+
 """
 
 import enum
 import logging
+import datetime
 
 
 class BitIntents(enum.IntEnum):
@@ -197,3 +201,17 @@ class Sticker:
 class FormatterThreading(logging.Formatter):
     def format(self):
         self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
+
+
+class ThreadMetadata:
+    def __init__(self, _data: dict):
+        self.archived: bool = _data["archived"]
+        """Whether this thread is archived or not."""
+        self.auto_archive_duration: int = _data["auto_archive_duration"]
+        """The duration, in minutes, in which this thread will auto archive itself. Only values this can be are 60,1440,4320, and 10080."""
+        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+            _data["archive_timestamp"]
+        )
+        """The timestamp at which this thread's archive status last changed."""
+        self.locked: bool = _data["locked"]
+        self.invitable: bool = _data.get("invitable")

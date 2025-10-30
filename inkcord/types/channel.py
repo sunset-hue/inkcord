@@ -5,6 +5,7 @@ if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from .permissions import PermissionOverwrite
     from .user import User
+    from ..shared_types import ThreadMetadata
 
 
 class Channel:
