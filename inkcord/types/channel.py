@@ -3,7 +3,7 @@ import datetime
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
-    from .permissions import PermissionOverwrite
+    from .permissions import PermissionOverwrite, Permissions
     from .user import User
     from ..shared_types import ThreadMetadata
 
@@ -93,6 +93,36 @@ class Channel:
     def member_count(self) -> int | None:
         """The number of unique members in this thread, automatically stops counting at 50."""
         return self._data.get("member_count")
+
+    @property
+    def thread_metadata(self) -> ThreadMetadata | None:
+        """Extra Thread Metadata."""
+        return (
+            ThreadMetadata(self._data["thread_metadata"])
+            if self._data.get("thread_metadata")
+            else None
+        )
+
+    @property
+    def default_auto_archive_duration(self) -> int | None:
+        """The default auto archive duration of this channel. Copied onto newly created threads."""
+        return self._data.get("default_auto_archive_duration")
+
+    @property
+    def permissions(self) -> Permissions | None:
+        """The permissions for this channel."""
+        return (
+            Permissions(self._data["permissions"])._permissionize()
+            if self._data.get("permissions")
+            else None
+        )
+
+    @property
+    def total_messages_all_time(self) -> int | None:
+        """The total messages ever sent in this channel. Doesn't decrement whenever a message is deleted, like the `total_messages` field does."""
+        return self._data.get("total_message_sent")
+
+    # yes, there are other fields, but I just feel like they are way too useless and too much work to implement
 
 
 class DMChannel(Channel):

@@ -214,4 +214,6 @@ class ThreadMetadata:
         )
         """The timestamp at which this thread's archive status last changed."""
         self.locked: bool = _data["locked"]
-        self.invitable: bool = _data.get("invitable")
+        """Whether this thread is locked"""
+        self.invitable: bool | None = _data.get("invitable")
+        """Whether other normal users can add other normal users to this thread."""
