@@ -10,12 +10,16 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 import typing
 from typing import Any, List
 import json
+from PIL import Image
+import base64
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
     from .guild import PartialGuild
     from .guild_mem import GuildMember
+    from .channel import DMChannel
+    from ..exceptions import ImproperUsage
 
 
 class User:
@@ -125,27 +129,41 @@ class User:
         return self.__init__(result)
         # the init is here because just doing self() raised an error
 
-    def modify_self(self, bot, username: str | None, avatar, banner):
+    def modify_self(
+        self,
+        bot,
+        username: str | None,
+        avatar: Image.Image | None,
+        banner: Image.Image | None,
+    ):
         """Modifies the current user.
 
         Args:
             bot (inkcord.Client): Not typehinted to prevent circular imports.
             username (str | None): Name of user.
-            avatar (None): Placeholder for now.
-            banner (None): Placeholder for now.
+            avatar (PIL.Image.Image | None): The avatar image, put through the PIL library.
+            banner (PIL.Image.Image | None): The banner image, put through the PIL library.
 
         Returns:
             inkcord.User : The modified user.
         """
-        request = bot._CONN.send_request(
-            "PATCH",
-            "users/@me",
-            {
-                "username": username
-                # the rest needs some extra logic
-            },
-        )
+        data = {
+            "username": username,
+            "avatar": f"data:image/png;base64,{base64.b64encode(avatar.tobytes()).decode()}",  # pyright: ignore[reportOptionalMemberAccess]
+            "banner": f"data:image/png;base64,{base64.b64encode(avatar.tobytes()).decode()}",  # pyright: ignore[reportOptionalMemberAccess]
+        }
+        if avatar is None:
+            data.pop("avatar")
+        if banner is None:
+            data.pop("banner")
+        request = bot._CONN.send_request("PATCH", "users/@me", data)
         result = json.loads(request.result().read())
+        if all([username == None, avatar == None, banner == None]):
+            raise ImproperUsage(
+                f"{self.global_name}.modify_self()",
+                txt="Supplied no arguments, so the User will remain unchanged.",
+            )
+
         return self.__init__(result)
 
     def current_user_guilds(
@@ -163,7 +181,7 @@ class User:
             before_id (ResourceID | None): The guild id at which to retrieve guild objects before.
             after_id (ResourceID | None): The guild id at which to retrieve guild objects after.
             with_counts (bool): Whether to return the approximate member counts/presence counts in the responses.
-            limit (int, optional): How much to retrieve. Defaults to 200(which is the max).
+            limit (int, optional): How much to retrieve. Defaults to 200 (which is the max).
 
         Returns:
             list[inkcord.PartialGuild]: The retrieved PartialGuild objects.
@@ -214,3 +232,5 @@ class User:
             bot: Not typehinted to prevent circular imports (inkcord.Client)
             recipient (ResourceID): The ID of the user to create a DM with.
         """
+        dm_channel = bot._CONN.send_request("POST", f"users/@me/channels")
+        return DMChannel(json.loads(dm_channel).result().read())

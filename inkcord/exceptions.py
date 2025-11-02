@@ -19,3 +19,8 @@ class HandleableException(Exception):
         pass
 
     # this is eventually gonna be an exception that has extra info with it like missing permissions and such
+
+
+class ImproperUsage(Warning):
+    def __init__(self, *args, txt: str):
+        logger.warning(f" {args}: {txt}")
