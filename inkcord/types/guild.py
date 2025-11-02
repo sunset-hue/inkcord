@@ -1,6 +1,8 @@
 import typing
 import json
 from typing import Self
+import PIL.Image
+import base64
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
@@ -331,3 +333,92 @@ class Guild:
             json.loads(request.result().read())
         )  # shut up python this is fine
         return result
+
+    def modify_guild(
+        self,
+        bot,
+        name: str,
+        verification_level: int | None,
+        default_message_notif_level: int | None,
+        explicit_content_filter: int | None,
+        afk_channel_id: int | None | ResourceID,
+        afk_timeout: int,
+        icon: PIL.Image.Image | None,
+        splash: PIL.Image.Image | None,
+        discovery_splash: PIL.Image.Image | None,
+        banner: PIL.Image.Image | None,
+        system_channel_id: int | None | ResourceID,
+        system_channel_flags: int,
+        rules_channel_id: int | None | ResourceID,
+        public_updates_channel_id: int | None | ResourceID,
+        preferred_locale: str | None,
+        description: str | None,
+        premium_progress_bar_enabled: bool,
+        safety_alerts_channel_id: int | None | ResourceID,
+    ):
+        """This function allows you to change all of the modifiable aspects of this guild. Note that this request will fail if one of the parameters requires permissions that this user/bot doesn't have.
+
+        Args:
+            bot (inkcord.Bot, not typehinted)
+            name (str): The name of the guild.
+            verification_level (int | None): An integer that's specified in the documentation for the verification level for this guild.
+            default_message_notif_level (int | None): An integer that's specified in the documentation for the message notification level for this guild.
+            explicit_content_filter (int | None): An integer that's specified in the documentation for the explicit content filter of the guild.
+            afk_channel_id (int | None | ResourceID): The afk channel id of the guild.
+            afk_timeout (int): The afk timeout length to be moved to the afk channel, in seconds. can be set to: 60, 300, 900, 1800, 3600
+            icon (PIL.Image.Image | None): The icon image for the guild.
+            splash (PIL.Image.Image | None): The splash image for the guild.
+            discovery_splash (PIL.Image.Image | None): The discovery splash image for the guild (this requires this guild to be discoverable)
+            banner (PIL.Image.Image | None): The banner image for the guild.
+            system_channel_id (int | None | ResourceID): The system channel id of the guild.
+            system_channel_flags (int): The system channel flags represented as a integer representation of a bit field.
+            rules_channel_id (int | None | ResourceID): The rules channel id of the guild.
+            public_updates_channel_id (int | None | ResourceID): the public updates channel id of the guild.
+            preferred_locale (str | None): the preferred locale for this guild.
+            description (str | None): The description string for this guild.
+            premium_progress_bar_enabled (bool): Whether the boost progress bar in this guild is enabled or not.
+            safety_alerts_channel_id (int | None | ResourceID): The safety alerts channel id for the guild.
+
+        Returns:
+            inkcord.Guild: The updated guild.
+        """
+        data = {
+            "name": name,
+            "verification_level": verification_level,
+            "default_message_notifications": default_message_notif_level,
+            "explicit_content_filter": explicit_content_filter,
+            "afk_channel_id": afk_channel_id,
+            "afk_timeout": afk_timeout,
+            "icon": (
+                f"data:image/png;base64,{base64.b64encode(icon.tobytes()).decode()}"
+                if icon
+                else None
+            ),
+            "splash": (
+                f"data:image/png;base64,{base64.b64encode(splash.tobytes()).decode()}"
+                if splash
+                else None
+            ),
+            "discovery_splash": (
+                f"data:image/png;base64,{base64.b64encode(discovery_splash.tobytes()).decode()}"
+                if discovery_splash
+                else None
+            ),
+            "banner": (
+                f"data:image/png;base64,{base64.b64encode(banner.tobytes()).decode()}"
+                if banner
+                else None
+            ),
+            "system_channel_id": system_channel_id,
+            "system_channel_flags": system_channel_flags,
+            "rules_channel_id": rules_channel_id,
+            "public_updates_channel_id": public_updates_channel_id,
+            "preferred_locale": preferred_locale,
+            "description": description,
+            "premium_progress_bar_enabled": premium_progress_bar_enabled,
+            "safety_alerts_channel_id": safety_alerts_channel_id,
+        }
+        res = bot._CONN.send_request(
+            "PATCH", f"guilds/{self.id}", data={x for x in data if data[x] is not None}
+        )
+        return self.__init__(res)
