@@ -36,6 +36,7 @@ class Client:
         self._CONN = AsyncClient.setup(
             token, intents, version=10, gateway=True, event_listners=self.listeners
         )
+
         self.version = version
         self.prereqs = []
 
@@ -79,6 +80,7 @@ class Client:
             cmds.name = name  # type: ignore
             cmds.private = private  # type: ignore
             self.slash_cmds.append(cmds)
+            self._CONN.slash_cmds = self.slash_cmds
             return cmds
 
         return add_to_list

@@ -266,6 +266,14 @@ class AsyncClient:
                         await asyncio.create_task(
                             coro=i.func  # pyright: ignore[reportArgumentType]
                         )
+                if self.current_event["t"] == "INTERACTION_CREATE":
+                    for i in self.slash_cmds:
+                        # this is where we're gonna pass off the interaction event to the command
+                        if i.name == self.current_event["d"]["name"]:
+                            await asyncio.create_task(
+                                coro=i.func,
+                            )
+                            # here, we need some way to turn the parameter object straight into values that the slash command can use
 
             except (
                 websockets.exceptions.WebSocketException,

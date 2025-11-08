@@ -3,6 +3,8 @@ import json
 from typing import Self
 import PIL.Image
 import base64
+from typing import overload
+
 
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
@@ -10,6 +12,7 @@ if typing.TYPE_CHECKING:
     from .role import Role
     from .emoji import Emoji
     from ..shared_types import WelcomeScreen, Sticker
+    from .channel import Channel, VoiceChannel
 
 
 class PartialGuild:
@@ -419,6 +422,66 @@ class Guild:
             "safety_alerts_channel_id": safety_alerts_channel_id,
         }
         res = bot._CONN.send_request(
-            "PATCH", f"guilds/{self.id}", data={x for x in data if data[x] is not None}
+            "PATCH",
+            f"guilds/{self.id}",
+            data={x: data[x] for x in data if data[x] is not None},
         )
-        return self.__init__(res)
+        return self.__init__(json)
+
+    def get_all_channels(self, bot) -> list[Channel]:
+        """Returns all the channels in this Guild.
+        the `bot` param should be filled with your current client."""
+        res = bot._CONN.send_request("GET", f"guilds/{self.id}/channels", None)
+        channel_list = []
+        for i in res:
+            if Channel.__dict__ == i:
+                channel_list.append(Channel(i))
+            if VoiceChannel.__dict__ == i:
+                channel_list.append(VoiceChannel(i))
+        return channel_list
+
+    @overload
+    def create_channel(self, bot, type: type[Channel], **kwargs): ...
+
+    @overload
+    def create_channel(self, bot, type: type[VoiceChannel], **kwargs): ...
+
+    def create_channel(self, bot, type, **kwargs):
+        """Creates a channel in this guild.
+
+        Args:
+            bot (not typehinted to prevent circular imports, inkcord.Client)
+            type (VoiceChannel | Channel (type, not an instance)): The type of channel to create.
+            kwargs: Any (Keyword Arguments): The fields to modify in this newly created channel. To see what fields can be modified, check out the Discord API documentation at `https://discord.com/developers/docs`
+        """
+        res = bot._CONN.send_request("POST", f"guilds/{self.id}/channels", kwargs)
+        if type is Channel:
+            return Channel(json.loads(res.result()))
+        return VoiceChannel(json.loads(res.result()))
+
+    def modify_channel_positions(
+        self,
+        bot,
+        id: ResourceID,
+        position: int | None,
+        permissions_inherit: bool | None,
+        parent_id: ResourceID | None,
+    ):
+        """Modifies a certain channel's position in this guild.
+
+        Args:
+            bot (_type_): _description_
+            id (ResourceID): _description_
+            position (int | None): _description_
+            permissions_inherit (bool | None): _description_
+            parent_id (ResourceID | None): _description_
+        """
+        if all(
+            [
+                id is None,
+                position is None,
+                permissions_inherit is None,
+                parent_id is None,
+            ]
+        ):
+            raise
