@@ -24,3 +24,10 @@ class HandleableException(Exception):
 class ImproperUsage(Warning):
     def __init__(self, *args, txt: str):
         logger.warning(f" {args}: {txt}")
+
+
+class RequiredIntentsMissing(Exception):
+    def __init__(self, *args):
+        logger.fatal(
+            f"{args}: Missing required intents to use this endpoint/retrieve resource."
+        )

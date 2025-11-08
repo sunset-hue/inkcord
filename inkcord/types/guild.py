@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
     from .emoji import Emoji
     from ..shared_types import WelcomeScreen, Sticker
     from .channel import Channel, VoiceChannel
+    from ..exceptions import ImproperUsage
 
 
 class PartialGuild:
@@ -470,12 +471,18 @@ class Guild:
         """Modifies a certain channel's position in this guild.
 
         Args:
-            bot (_type_): _description_
-            id (ResourceID): _description_
-            position (int | None): _description_
-            permissions_inherit (bool | None): _description_
-            parent_id (ResourceID | None): _description_
+            bot (inkcord.Client, not typehinted to prevent circular imports)
+            id (ResourceID): The id of the channel to edit the position of.
+            position (int | None): The posotion to change the channel to.
+            permissions_inherit (bool | None): Whether to inherit the permissions of the new parent id, if moving to a new channel category.
+            parent_id (ResourceID | None): The new parent id for the channel that is moved.
         """
+        data = {
+            "id": id,
+            "position": position,
+            "lock_permissions": permissions_inherit,
+            "parent_id": parent_id,
+        }
         if all(
             [
                 id is None,
@@ -484,4 +491,20 @@ class Guild:
                 parent_id is None,
             ]
         ):
-            raise
+            raise ImproperUsage(
+                f"{self.name}.modify_channel_positions()",
+                txt="No arguments were supplied to this API call, so no changes were made.",
+            )
+        else:
+            res = bot._CONN.send_request(
+                "PATCH",
+                f"guilds/{self.id}/channels",
+                {x: data[x] for x in data if data[x] is not None},
+            )
+
+    def list_active_thread_members(self):
+        "Placeholder"
+        pass
+    
+    def list_guild_members(self):
+        
