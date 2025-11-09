@@ -524,6 +524,7 @@ class Guild:
 
     def list_active_threads(self, bot) -> list[tuple[Channel, ThreadMember]]:
         """Lists all the active threads in this guild.
+        Note that the tuple may not be always 2 elements, as there may be a variable amount of channels compared to thread members, and vice versa. Do not rely on the tuple being 2 elements.
 
         Args:
             bot: inkcord.Client, not typehinted to prevent circular imports
