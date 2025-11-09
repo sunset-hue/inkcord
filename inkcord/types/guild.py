@@ -4,6 +4,7 @@ from typing import Self
 import PIL.Image
 import base64
 from typing import overload
+import datetime
 
 
 if typing.TYPE_CHECKING:
@@ -13,10 +14,29 @@ if typing.TYPE_CHECKING:
     from .emoji import Emoji
     from ..shared_types import WelcomeScreen, Sticker
     from .channel import Channel, VoiceChannel
-    from ..exceptions import ImproperUsage
+    from ..exceptions import ImproperUsage, RequiredIntentsMissing
+
+
+class ThreadMember:
+    """Represents a member in a thread."""
+
+    def __init__(self, _data: dict):
+        self.thread_id: ResourceID | None = (
+            ResourceID(_data["id"]) if _data.get("id") else None
+        )
+        """The ID of the thread this member is a part of."""
+        self.user_id: ResourceID | None = (
+            ResourceID(_data["user_id"]) if _data.get("user_id") else None
+        )
+        """The ID of the user."""
+        self.user_join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+            _data["join_timestamp"]
+        )
+        """When the user last joined the specified thread."""
 
 
 class PartialGuild:
+    """A guild object, but missing most of the fields, only retaining the most important ones."""
 
     def __init__(self, _data: dict):
         self.__data = _data
@@ -502,9 +522,19 @@ class Guild:
                 {x: data[x] for x in data if data[x] is not None},
             )
 
-    def list_active_thread_members(self):
-        "Placeholder"
-        pass
-    
-    def list_guild_members(self):
-        
+    def list_active_threads(self, bot) -> list[tuple[Channel, ThreadMember]]:
+        """Lists all the active threads in this guild.
+
+        Args:
+            bot: inkcord.Client, not typehinted to prevent circular imports
+
+        Returns:
+            list [(inkcord.Channel,ThreadMember)] A list containing all the active threads, and all the members that are in that specific thread, packed into a tuple.
+        """
+        res = json.loads(
+            bot._CONN.send_request("GET", f"guilds/{self.id}/threads/active").result()
+        )
+        thr_list = []
+        for i, r in zip(res["threads"], res["members"]):
+            thr_list.append((Channel(i), ThreadMember(r)))
+        return thr_list
