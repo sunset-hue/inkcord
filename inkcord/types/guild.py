@@ -14,7 +14,8 @@ if typing.TYPE_CHECKING:
     from .emoji import Emoji
     from ..shared_types import WelcomeScreen, Sticker
     from .channel import Channel, VoiceChannel
-    from ..exceptions import ImproperUsage, RequiredIntentsMissing
+    from ..exceptions import ImproperUsage
+    from .guild_mem import GuildMember
 
 
 class ThreadMember:
@@ -539,3 +540,20 @@ class Guild:
         for i, r in zip(res["threads"], res["members"]):
             thr_list.append((Channel(i), ThreadMember(r)))
         return thr_list
+
+    def get_guild_member(self, bot, id: ResourceID) -> GuildMember:
+        """Returns a guild member object by ID.
+
+        Args:
+            bot (not typehinted, should be inkcord.Client): Your bot.
+            id (ResourceID): The ID of the guild member you want to retrieve.
+
+        Returns:
+            GuildMember: The returned guild member.
+        """
+        res = json.loads(
+            bot._CONN.send_request("GET", f"guilds/{self.id}/members/{id}")
+        )
+        gm = GuildMember(res)
+        gm.guild = self
+        return gm
