@@ -120,7 +120,7 @@ class AsyncClient:
         self,
         method: typing.Literal["POST", "GET", "PUT", "DELETE", "PATCH"],
         route: str,
-        data: dict | None,
+        data: dict | None = None,
         **params,
     ):
         """Lowest level interface in this library to send and recieve the result of a request"""
@@ -291,7 +291,9 @@ class AsyncClient:
                                         channel,
                                         member,
                                         guild,
+                                        self.current_event["d"]["id"],
                                         self.current_event["d"]["token"],
+                                        self,
                                     ),
                                     **arg_data,
                                 )

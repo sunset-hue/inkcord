@@ -31,3 +31,8 @@ class RequiredIntentsMissing(Exception):
         logger.fatal(
             f"{args}: Missing required intents to use this endpoint/retrieve resource."
         )
+
+
+class InteractionFailed(Exception):
+    def __init__(self, txt):
+        logger.fatal(f"{txt}")
