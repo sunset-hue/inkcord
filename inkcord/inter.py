@@ -1,5 +1,6 @@
 import typing as t
 from dataclasses import dataclass
+from typing import Self
 
 if t.TYPE_CHECKING:
     from types.guild import Guild
@@ -14,3 +15,7 @@ class Interaction:
     channel: "Channel | None | list[Channel]"
     author: "GuildMember | None | list[GuildMember]"
     guild: "Guild | None | list[Guild]"
+    _token: None | str
+
+    def send(self, message: str) -> Self | t.NoReturn:
+        raise NotImplementedError

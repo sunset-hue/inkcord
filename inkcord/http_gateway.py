@@ -287,7 +287,13 @@ class AsyncClient:
                             # only gonna support builtin types for now
                             await asyncio.create_task(
                                 coro=i.func(
-                                    Interaction(channel, member, guild), **arg_data
+                                    Interaction(
+                                        channel,
+                                        member,
+                                        guild,
+                                        self.current_event["d"]["token"],
+                                    ),
+                                    **arg_data,
                                 )
                             )
                             # here, we need some way to turn the parameter object straight into values that the slash command can use
