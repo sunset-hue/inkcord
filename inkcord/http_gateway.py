@@ -28,6 +28,9 @@ if typing.TYPE_CHECKING:
     )
     from .listener import EventListener
     from .exceptions import RequestException
+    from .inter import Interaction
+
+
 handler = logging.StreamHandler()
 handler.setFormatter(
     FormatterThreading(
@@ -42,11 +45,11 @@ class Request:
     def __init__(
         self,
         method: typing.Literal["POST", "GET", "PUT", "DELETE", "PATCH"],
-        data: dict,
+        data: dict | None,
         route: str,
     ):
         self.method = method
-        self.data = json.dumps(data)
+        self.data = json.dumps(data) if data else None
         self.api_route = route
 
 
@@ -93,7 +96,7 @@ class AsyncClient:
         class_setup.event_listeners = event_listners  # pyright: ignore
         return class_setup
 
-    def send_multiple_requests(self, *requests: Request):
+    def send_multiple_requests(self, *requests: list[Request]):
         """Lowest level interface in this library to send and recieve the result of multiple requests."""
         futures: list[asyncio.Future] = []
         for request in requests:
@@ -264,14 +267,28 @@ class AsyncClient:
                 for i in self.event_listeners:
                     if i.event_name == self.current_event["t"]:
                         await asyncio.create_task(
-                            coro=i.func  # pyright: ignore[reportArgumentType]
+                            coro=i.func(...)  # pyright: ignore[reportArgumentType]
                         )
                 if self.current_event["t"] == "INTERACTION_CREATE":
                     for i in self.slash_cmds:
                         # this is where we're gonna pass off the interaction event to the command
                         if i.name == self.current_event["d"]["name"]:
+                            from types.channel import Channel
+                            from types.guild import Guild
+                            from types.guild_mem import GuildMember
+
+                            arg_data = {
+                                x["name"]: x["value"]
+                                for x in self.current_event["d"]["options"]
+                            }
+                            guild = Guild(self.current_event["d"]["guild"])
+                            channel = Channel(self.current_event["d"]["channel"])
+                            member = GuildMember(self.current_event["d"]["member"])
+                            # only gonna support builtin types for now
                             await asyncio.create_task(
-                                coro=i.func,
+                                coro=i.func(
+                                    Interaction(channel, member, guild), **arg_data
+                                )
                             )
                             # here, we need some way to turn the parameter object straight into values that the slash command can use
 
