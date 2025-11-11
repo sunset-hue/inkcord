@@ -1,4 +1,7 @@
 # inkcord
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/sunset-hue/inkcord?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Documentation-v0.1.0-orange?style=for-the-badge)
+
 A discord API wrapper made from standard libraries, not requiring any dependencies (except websocket, since it's really complicated to implement)
 
 ## Why use this wrapper?
