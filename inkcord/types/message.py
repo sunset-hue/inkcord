@@ -16,6 +16,13 @@ if typing.TYPE_CHECKING:
     from .user import User
 
 
+class ChannelMention:
+    def __init__(self, _data: dict):
+        self.id: ResourceID = ResourceID(_data["id"])
+        self.guild_id: ResourceID = ResourceID(_data["guild_id"])
+        self.name: str = _data["name"]
+
+
 class Message:
     def __init__(self, _data: dict):
         self._dict = _data
@@ -78,3 +85,12 @@ class Message:
     def mention_roles(self) -> list[ResourceID]:
         """The list of role ID's that represent the roles that were mentioned in this message."""
         return [ResourceID(id) for id in self._dict["mention_roles"]]
+
+    @property
+    def channel_mentions(self) -> list[ChannelMention] | None:
+        """The list of channels that were mentioned. The data is returned through a inkcord.ChannelMention object, which contains minimal info about the mentioned channel."""
+        return (
+            [ChannelMention(x) for x in self._dict["channel_mentions"]]
+            if self._dict.get("channel_mentions")
+            else None
+        )
