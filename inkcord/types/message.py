@@ -14,6 +14,7 @@ from datetime import datetime
 if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from .user import User
+    from .attach import Attachment
 
 
 class ChannelMention:
@@ -92,5 +93,14 @@ class Message:
         return (
             [ChannelMention(x) for x in self._dict["channel_mentions"]]
             if self._dict.get("channel_mentions")
+            else None
+        )
+
+    @property
+    def attachments(self) -> list[Attachment] | None:
+        """The list of attachments that were in this message, if applicable."""
+        return (
+            [Attachment(x) for x in self._dict["attachments"]]
+            if self._dict.get("attachments")
             else None
         )
