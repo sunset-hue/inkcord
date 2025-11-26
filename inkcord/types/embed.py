@@ -19,7 +19,9 @@ class Embed:
         """
         if len(title) > 256:
             raise UserWarning(
-                f"embed.{title}: This field exceeds the limit of characters that are usable in a embed field title. In a future update, this text will be truncated."
+                f"embed.{title}: This field exceeds the limit of characters that are usable (256) in a embed field title. In a future update, this text will be truncated."
             )
         if len(content) > 1024:
-            ...
+            raise UserWarning(
+                f"embed.{content}: This field exceeds the limit of characters (1024) that are usable in a embed field content string. In a future update, this text will be truncated."
+            )
