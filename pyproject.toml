@@ -11,7 +11,7 @@ requires-python = ">= 3.8"
 authors = [
     {name = "sunset-hue", email = "pycharmdudeig@gmail.com"}
 ]
-description = "A api wrapper made from the standard python namespace packages, nothing else"
+description = "A api wrapper over discord made from the standard python namespace packages, nothing else, well except websockets"
 readme = "README.md"
 license = "MIT"
 keywords = ["discord","standard","api"]
