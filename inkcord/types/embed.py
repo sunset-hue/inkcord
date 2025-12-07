@@ -49,6 +49,114 @@ class Embed:
             "icon_url": icon_url if icon_url else None,
             "proxy_icon_url": proxy_icon_url if proxy_icon_url else None,
         }
+        if len(text) > 2048:
+            raise UserWarning(
+                f"embed.footer.text: The text contained here exceeds the character limit of a footer text (2048 characters)"
+            )
         for i in self.__payloaded["footer"].keys():
             if not self.__payloaded["footer"][i]:
                 self.__payloaded["footer"].pop(i)
+
+    def image(
+        self,
+        url: str,
+        proxy_url: str = "",
+        height: int | None = None,
+        width: int | None = None,
+    ):
+        """Attaches an image to this embed.
+
+        Args:
+            url (str): The URL to use as the image. Only supports http(s) and discord attachments.
+            proxy_url (str, optional): A proxied version of `url`. Defaults to "".
+            height (int | None, optional): The height of the image. Defaults to None.
+            width (int | None, optional): The width. Defaults to None.
+        """
+        self.__payloaded["image"] = {
+            "url": url if url else None,
+            "proxy_url": proxy_url if proxy_url != "" else None,
+            "height": height if height else None,
+            "width": width if width else None,
+        }
+        for i in self.__payloaded["image"].keys():
+            if not self.__payloaded["image"][i]:
+                self.__payloaded["image"].pop(i)
+
+    def thumbnail(
+        self,
+        url: str,
+        proxy_url: str = "",
+        height: int | None = None,
+        width: int | None = None,
+    ):
+        """Attaches a thumbnail to this embed.
+
+        Args:
+            url (str): The URL to use as the thumbnail. Only supports http(s) and discord attachments.
+            proxy_url (str, optional): A proxied version of `url`. Defaults to "".
+            height (int | None, optional): The height of the thumbnail. Defaults to None.
+            width (int | None, optional): The width. Defaults to None.
+        """
+        self.__payloaded["thumbnail"] = {
+            "url": url if url else None,
+            "proxy_url": proxy_url if proxy_url != "" else None,
+            "height": height if height else None,
+            "width": width if width else None,
+        }
+        for i in self.__payloaded["thumbnail"].keys():
+            if not self.__payloaded["thumbnail"][i]:
+                self.__payloaded["thumbnail"].pop(i)
+
+    def video(
+        self,
+        url: str,
+        proxy_url: str = "",
+        height: int | None = None,
+        width: int | None = None,
+    ):
+        """Attaches a video to this embed.
+
+        Args:
+            url (str): The URL to use as the video. Only supports http(s) and discord attachments.
+            proxy_url (str, optional): A proxied version of `url`. Defaults to "".
+            height (int | None, optional): The height of the video. Defaults to None.
+            width (int | None, optional): The width. Defaults to None.
+        """
+        self.__payloaded["video"] = {
+            "url": url if url else None,
+            "proxy_url": proxy_url if proxy_url != "" else None,
+            "height": height if height else None,
+            "width": width if width else None,
+        }
+        for i in self.__payloaded["video"].keys():
+            if not self.__payloaded["video"][i]:
+                self.__payloaded["video"].pop(i)
+
+    def provider(self, name: str, url: str):
+        """Creates a provider field for this embed.
+        Args:
+            name (str): The name of the provider.
+            url (str): The URL of the provider.
+        """
+        self.__payloaded["provider"] = {"name": name, "url": url}
+
+    def author(
+        self, name: str, url: str = "", icon_url: str = "", proxy_icon_url: str = ""
+    ):
+        """Creates a author field for this embed.
+
+        Args:
+            name (str): The name of the author.
+            url (str, optional): The URL of the author.. Defaults to "".
+            icon_url (str, optional): The icon URL of the author. Defaults to "".
+            proxy_icon_url (str, optional): A proxied version of the `url`. Defaults to "".
+        """
+        self.__payloaded["author"] = {
+            "name": name,
+            "url": url if url != "" else None,
+            "icon_url": icon_url if icon_url != "" else None,
+            "proxy_icon_url": proxy_icon_url if proxy_icon_url != "" else None,
+        }
+        for i in self.__payloaded["author"]:
+            if not self.__payloaded["author"][i]:
+                self.__payloaded["author"].pop(i)

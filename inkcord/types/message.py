@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
     from ..resourceid import ResourceID
     from .user import User
     from .attach import Attachment
+    from .embed import Embed
 
 
 class ChannelMention:
@@ -88,19 +89,16 @@ class Message:
         return [ResourceID(id) for id in self._dict["mention_roles"]]
 
     @property
-    def channel_mentions(self) -> list[ChannelMention] | None:
+    def channel_mentions(self) -> list[ChannelMention]:
         """The list of channels that were mentioned. The data is returned through a inkcord.ChannelMention object, which contains minimal info about the mentioned channel."""
-        return (
-            [ChannelMention(x) for x in self._dict["channel_mentions"]]
-            if self._dict.get("channel_mentions")
-            else None
-        )
+        return [ChannelMention(x) for x in self._dict["channel_mentions"]]
 
     @property
-    def attachments(self) -> list[Attachment] | None:
+    def attachments(self) -> list[Attachment]:
         """The list of attachments that were in this message, if applicable."""
-        return (
-            [Attachment(x) for x in self._dict["attachments"]]
-            if self._dict.get("attachments")
-            else None
-        )
+        return [Attachment(x) for x in self._dict["attachments"]]
+
+    @property
+    def embeds(self) -> list[Embed]:
+        """The list of embeds that were in this message, if applicable."""
+        return [Embed(x) for x in self._dict["embeds"]]
