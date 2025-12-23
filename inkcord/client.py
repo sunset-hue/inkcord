@@ -123,3 +123,7 @@ class Client:
             self.prereqs.append(func)
 
         return add_to_prereq_list
+
+    def run(self):
+        """Allows you to run the bot, synchronously."""
+        ...
