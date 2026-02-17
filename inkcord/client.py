@@ -1,6 +1,7 @@
 import typing
 import functools
 import json
+import asyncio
 
 if typing.TYPE_CHECKING:
     from .shared_types import BitIntents
@@ -126,4 +127,8 @@ class Client:
 
     def run(self):
         """Allows you to run the bot, synchronously."""
-        ...
+        url = self._CONN.get_gateway_url()
+        loop = asyncio.new_event_loop()
+        for i in self.prereqs:
+            loop.create_task(i)
+        loop.create_task(self._CONN.establish_handshake)  # type: ignore
